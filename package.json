@@ -1,0 +1,24 @@
+{
+  "name": "@saji/git-hooks",
+  "version": "1.0.0",
+  "description": "Set of common git hooks",
+  "repository": {
+    "type": "git",
+    "url": "https:/github.com/marek-saji/git-hooks"
+  },
+  "keywords": [
+    "git",
+    "hooks",
+    "javascript",
+    "test",
+    "lint"
+  ],
+  "author": "Marek ‘saji’ Augustynowicz <marek.aug@gmail.com>",
+  "license": "ISC",
+  "scripts": {
+    "test": "echo 'No tests yet'"
+  },
+  "bin": {
+    "install-git-hooks": "./scripts/install.sh"
+  }
+}

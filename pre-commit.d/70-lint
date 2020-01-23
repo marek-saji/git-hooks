@@ -1,0 +1,42 @@
+#!/bin/sh
+set -e
+
+if [ "$VERBOSITY" -gt 1 ]
+then
+    shopt=x
+else
+    shopt=
+fi
+
+# TODO Check if is configured
+if command -v eslint >/dev/null
+then
+    # shellcheck disable=SC2016
+    git diff --cached --diff-filter=ACMR --name-only "$AGAINST" '*.js' '*.mjs' '*.jsx' '*.ts' '*.tsx' |
+        $XARGS -n1 "$SHELL" -$-c "git show :\"\$1\" | { set -$shopt; eslint --stdin --stdin-filename=\"\$1\"; }" --
+fi
+
+# TODO Check if is configured
+if command -v stylelint >/dev/null
+then
+    # shellcheck disable=SC2016
+    git diff --cached --diff-filter=ACMR --name-only "$AGAINST" '*.css' |
+        $XARGS -n1 "$SHELL" -$-c "git show :\"\$1\" | { set -$shopt; stylelint --stdin-filename=\"\$1\"; }" --
+    # shellcheck disable=SC2016
+    git diff --cached --diff-filter=ACMR --name-only "$AGAINST" '*.scss' |
+        $XARGS -n1 "$SHELL" -$-c "git show :\"\$1\" | { set -$shopt; stylelint --stdin-filename=\"\$1\" --syntax=scss; }" --
+fi
+
+if command -v shellcheck >/dev/null
+then
+    # FIXME | sed 's~/dev/stdin/~$1~', but without loosing exit code
+    # shellcheck disable=SC2016
+    git diff --cached --diff-filter=ACMR --name-only "$AGAINST" \
+            ':(exclude)*.js' ':(exclude)*.mjs' ':(exclude)*.jsx' \
+            ':(exclude)*.ts' ':(exclude)*.tsx' \
+            ':(exclude)*.css' ':(exclude)*.scss' \
+            ':(exclude)*.md' \
+            ':(exclude)*.storyshot' ':(exclude)*.storyshot' |
+        $XARGS grep -El '^#!/bin/(sh|bash|dash|ksh)' |
+        $XARGS -n1 "$SHELL" -$-c "set -$shopt; git show :\"\$1\" | shellcheck /dev/stdin #" --
+fi

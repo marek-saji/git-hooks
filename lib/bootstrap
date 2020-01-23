@@ -1,0 +1,67 @@
+#!/bin/sh
+set -e
+
+# Redirect output to stderr.
+exec 1>&2
+
+ARGV="$( ps -o command= -q "$PPID" || ps -o command= fd "$PPID" || : )"
+export ARGV
+# TODO Set VERBOSITY from --verbose | -v | -vv | -vvv etc.
+# TODO Add a hook that checks if --fixup=… matches anything
+
+VERBOSITY="$( git config --get --type=int "hooks.verbosity" || echo 0 )"
+if [ "$VERBOSITY" -gt 2 ]
+then
+    set -x
+fi
+export VERBOSITY
+
+PACKAGE_DIR="$( dirname "$( readlink "$0" )" )/.."
+export PACKAGE_DIR
+
+BASE_BRANCH=master
+export BASE_BRANCH
+
+if git rev-parse --verify HEAD >/dev/null 2>&1
+then
+    AGAINST=HEAD
+else
+    # Initial commit: diff against an empty tree object
+    AGAINST="$( git hash-object -t tree /dev/null )"
+fi
+export AGAINST
+
+if xargs --help | grep -q -- --no-run-if-empty
+then
+    XARGS="xargs --no-run-if-empty"
+else
+    # On MacOS xargs does not have that option (which is a GNU
+    # extension), but acts that way by default
+    XARGS="xargs"
+fi
+export XARGS
+
+
+run_hooks ()
+{
+    hook_type="$( basename "$0" .sh )"
+    dir="$PACKAGE_DIR/$hook_type.d"
+    find "$dir" -maxdepth 1 -type f -executable | sort |
+        while read -r hook
+        do
+            name="$( basename "$hook" .sh  | sed 's/^[0-9_ -]*//' )"
+            if [ "$( git config --get --type=bool --default=true "hooks.$hook_type.$name.enabled" )" = "true" ]
+            then
+                if [ "$VERBOSITY" -gt 0 ]
+                then
+                    printf "\e[2m%s\e[m\n" "$name"
+                fi
+                # shellcheck disable=SC1090
+                if ! ( . "$hook" )
+                then
+                    printf "\e[1;41mERROR: %s failed\e[m\n" "$hook" 1>&2
+                    false
+                fi
+            fi
+        done
+}

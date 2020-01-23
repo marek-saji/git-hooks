@@ -1,0 +1,42 @@
+#!/bin/sh
+set -e
+
+if [ "$VERBOSITY" -gt 1 ]
+then
+    shopt=x
+else
+    shopt=
+fi
+
+if [ -n "$RANGE" ]
+then
+    if git diff --quiet
+    then
+        stashed=
+    else
+        git stash --keep-index --message="Stashed for running tests"
+        stashed=1
+    fi
+
+    test_script="$( npm run | grep -A1 '^  test$' | tail -n+2 )"
+    set +e
+    if echo "$test_script" | grep -q jest
+    then
+        git diff --name-only "$RANGE" |
+            $XARGS "$SHELL" -$-"$shopt"c 'npm test --silent -- --ci --color --coverage=no --findRelatedTests "$@"' --
+    else
+        npm test --silent
+    fi
+    test_exit_code=$?
+    set -e
+
+    if [ "$stashed" = 1 ]
+    then
+        git stash pop
+    fi
+
+    if [ "$test_exit_code" != "0" ]
+    then
+        false
+    fi
+fi

@@ -1,0 +1,7 @@
+#!/bin/sh
+set -e
+
+# Check for whitespace errors and conflict markers
+git diff-index --check --cached "$AGAINST" -- ':(exclude)*.storyshot' ':(exclude)*.snap'
+# Be less strict on whitespace with generated files
+git -c core.whitespace="-blank-at-eol,-blank-at-eof,-trailing-space" diff-index --check --cached "$AGAINST" -- '*.storyshot' '*.snap'
