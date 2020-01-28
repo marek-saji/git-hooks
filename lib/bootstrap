@@ -50,7 +50,9 @@ run_hooks ()
         while read -r hook
         do
             name="$( basename "$hook" .sh  | sed 's/^[0-9_ -]*//' )"
-            if [ "$( git config --get --type=bool --default=true "hooks.$hook_type.$name.enabled" )" = "true" ]
+            CONFIG_NAMESPACE="hooks.$hook_type.$name"
+            export CONFIG_NAMESPACE
+            if [ "$( git config --get --type=bool --default=true "$CONFIG_NAMESPACE.enabled" )" = "true" ]
             then
                 if [ "$VERBOSITY" -gt 0 ]
                 then

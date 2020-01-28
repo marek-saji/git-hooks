@@ -42,5 +42,18 @@ Configuration
    - 2: Also print main commands for some hooks
    - 3: Also run everything with `set -x`
 
-   (TODO) If not specified in config, verbosity is controlled with -v
-   parameter(s) passed to git-commit.
+   (TODO) If not specified in config, verbosity is controlled by number
+   of `-v` parameter(s) passed to git-commit.
+
+
+### pre-push test
+
+This hook detects if [jest] is being used for testing and if so, it
+calls it with [`--findRelatedTests`] with list of files modified in the
+push. This option enables you to add list of files to that list, e.g.
+
+    git config hooks.pre-push.test.forcedFiles tests/storybook.test.js
+
+
+[jest]: https://jestjs.io/
+[`--findRelatedTests`]: https://jestjs.io/docs/en/cli#--findrelatedtests-spaceseparatedlistofsourcefiles

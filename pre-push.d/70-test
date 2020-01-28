@@ -22,8 +22,10 @@ then
     set +e
     if echo "$test_script" | grep -q jest
     then
-        git diff --name-only "$RANGE" |
-            $XARGS "$SHELL" -$-"$shopt"c 'npm test --silent -- --ci --color --coverage=no --findRelatedTests "$@"' --
+        {
+            git config --get "$CONFIG_NAMESPACE.forcedFiles" || :
+            git diff --name-only "$RANGE"
+        } | $XARGS "$SHELL" -$-"$shopt"c 'npm test --silent -- --ci --color --coverage=no --findRelatedTests "$@"' --
     else
         npm test --silent
     fi
