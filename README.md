@@ -46,11 +46,12 @@ Configuration
    of `-v` parameter(s) passed to git-commit.
 
 
-### pre-push test
+### pre-push npm-test
 
-This hook detects if [jest] is being used for testing and if so, it
-calls it with [`--findRelatedTests`] with list of files modified in the
-push. This option enables you to add list of files to that list, e.g.
+This hook detects if [jest] is being used for testing and if so, only
+runs tests that are related to modified files, but that heuristic is not
+perfect. This option enables you to additionally always run selected
+tests, e.g.
 
     git config hooks.pre-push.test.forcedFiles tests/storybook.test.js
 
