@@ -22,11 +22,12 @@ then
     set +e
     if echo "$test_script" | grep -q jest
     then
+        # TODO Use --changedSince if forcedFiles is not set
         # TODO If list is too long, fall–back to running all tests
         {
             git config --get "$CONFIG_NAMESPACE.forcedFiles" || :
             git diff --name-only "$RANGE"
-        } | $XARGS "$SHELL" -$-"$shopt"c 'npm test --silent -- --ci --color --coverage=no --findRelatedTests "$@"' --
+        } | $XARGS "$SHELL" -$-"$shopt"c 'npm test --silent -- --ci --color --coverage=no --passWithNoTests --findRelatedTests "$@"' --
     else
         npm test --silent
     fi

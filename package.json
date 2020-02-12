@@ -1,10 +1,19 @@
 {
   "name": "@saji/git-hooks",
-  "version": "1.0.0",
+  "version": "1.0.0-pre",
+  "author": {
+    "name": "Marek ‘saji’ Augustynowicz",
+    "email": "marek.aug@gmail.com"
+  },
+  "license": "ISC",
   "description": "Set of common git hooks",
+  "homepage": "https://github.com/marek-saji/git-hooks",
+  "bugs": {
+    "url": "https://github.com/marek-saji/git-hooks/issues"
+  },
   "repository": {
     "type": "git",
-    "url": "https:/github.com/marek-saji/git-hooks"
+    "url": "https://github.com/marek-saji/git-hooks"
   },
   "keywords": [
     "git",
@@ -13,12 +22,11 @@
     "test",
     "lint"
   ],
-  "author": "Marek ‘saji’ Augustynowicz <marek.aug@gmail.com>",
-  "license": "ISC",
-  "scripts": {
-    "test": "echo 'No tests yet'"
-  },
   "bin": {
-    "install-git-hooks": "./scripts/install.sh"
+    "install-git-hooks": "./install.sh"
+  },
+  "scripts": {
+    "test": "echo 'No tests yet'",
+    "postinstall": "install-git-hooks"
   }
 }

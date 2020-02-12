@@ -4,20 +4,25 @@ git hooks
 Installation
 ------------
 
-### via script
+### via npm dependency (recommended)
 
-1. Clone this repository anywhere
-2. Run `scripts/install.sh PATH_TO_YOUR_PROJECT`
+1. `npm install --save-dev @saji/git-hooks`
+2. Add `install-git-hooks` to your `postinstall` script
 
-### via npm–installed script
+### from global npm install
 
-1. `npm install -g @saji/git-hooks` (TODO)
+1. `npm install -g @saji/git-hooks`
 2. Run `install-git-hooks PATH_TO_YOUR_PROJECT`
 
-### via npm dependency
+### from cloned repository
 
-1. `npm install @saji/git-hooks` (TODO)
-2. Add `install-git-hooks` to your `postinstall` script
+1. Clone this repository anywhere
+2. Run `YOUR_ANYWHERE/install.sh PATH_TO_YOUR_PROJECT`
+
+### by changing hooksPath
+
+1. Clone this repository anywhere
+2. Run `git config core.hooksPath YOUR_ANYWHERE/hooks`
 
 ### via whatever
 

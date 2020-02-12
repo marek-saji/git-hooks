@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC1111
 set -e
 
 # Redirect output to stderr.
@@ -61,7 +62,7 @@ run_hooks ()
                 # shellcheck disable=SC1090
                 if ! ( . "$hook" )
                 then
-                    printf "\e[1;41mERROR: %s failed\e[m\n" "$hook" 1>&2
+                    printf "\e[1;41mERROR: %s “%s” hook failed\e[m\n" "$hook_type" "$name" 1>&2
                     false
                 fi
             fi
