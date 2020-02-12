@@ -24,6 +24,6 @@ do
     # TODO If exists and it’s not us -- print a warning
     if ! [ -e "$name" ]
     then
-        ln -vs "$scripts_dir/$name.sh" "$name"
+        ln -vs "$scripts_dir/$name" "$name"
     fi
 done
