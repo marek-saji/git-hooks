@@ -1,6 +1,10 @@
 #!/bin/sh
 set -e
 
+# TODO Introduce $CONFIG_NAMESPACE.{conflictMarkers,whitespace}.exclude
+#      and remove hardcoded excludes from here.
+#      Or maybe split it into two hooks each with separate config
+
 # Check for whitespace errors and conflict markers
 git diff-index --check --cached "$AGAINST" -- ':(exclude)*.storyshot' ':(exclude)*.snap'
 # Be less strict on whitespace with generated files

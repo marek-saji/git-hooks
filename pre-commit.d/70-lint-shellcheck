@@ -1,0 +1,24 @@
+#!/bin/sh
+set -e
+
+# TODO Introduce $CONFIG_NAMESPACE.exclude
+
+if [ "$VERBOSITY" -gt 1 ]
+then
+    shopt=x
+else
+    shopt=
+fi
+
+if command -v shellcheck >/dev/null
+then
+    # FIXME | sed 's~/dev/stdin/~$1~', but without loosing exit code
+    git diff --cached --diff-filter=ACMR --name-only "$AGAINST" \
+            ':(exclude)*.js' ':(exclude)*.mjs' ':(exclude)*.jsx' \
+            ':(exclude)*.ts' ':(exclude)*.tsx' \
+            ':(exclude)*.css' ':(exclude)*.scss' \
+            ':(exclude)*.md' \
+            ':(exclude)*.storyshot' ':(exclude)*.storyshot' |
+        $XARGS grep -El '^#!/bin/(sh|bash|dash|ksh)' |
+        $XARGS -n1 "$SHELL" -$-c "set -$shopt; git show :\"\$1\" | shellcheck /dev/stdin #" --
+fi

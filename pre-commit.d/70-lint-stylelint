@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e
+
+# TODO Introduce $CONFIG_NAMESPACE.exclude
+
+if [ "$VERBOSITY" -gt 1 ]
+then
+    shopt=x
+else
+    shopt=
+fi
+
+# TODO Check if is configured
+if command -v stylelint >/dev/null
+then
+    git diff --cached --diff-filter=ACMR --name-only "$AGAINST" '*.css' |
+        $XARGS -n1 "$SHELL" -$-c "git show :\"\$1\" | { set -$shopt; stylelint --stdin-filename=\"\$1\"; }" --
+    git diff --cached --diff-filter=ACMR --name-only "$AGAINST" '*.scss' |
+        $XARGS -n1 "$SHELL" -$-c "git show :\"\$1\" | { set -$shopt; stylelint --stdin-filename=\"\$1\" --syntax=scss; }" --
+fi
