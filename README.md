@@ -58,7 +58,7 @@ runs tests that are related to modified files, but that heuristic is not
 perfect. This option enables you to additionally always run selected
 tests, e.g.
 
-    git config hooks.pre-push.test.forcedFiles tests/storybook.test.js
+    git config hooks.pre-push.npm-test.forcedFiles tests/storybook.test.js
 
 
 [jest]: https://jestjs.io/
