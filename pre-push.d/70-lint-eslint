@@ -1,0 +1,15 @@
+#!/bin/sh
+set -e
+
+if [ "$VERBOSITY" -gt 1 ]
+then
+    shopt=x
+else
+    shopt=
+fi
+
+if [ -n "$RANGE" ]
+then
+    git diff --name-only "$RANGE" -- '*.js' '*.mjs' '*.jsx' '*.ts' '*.tsx' |
+        $XARGS -n1 "$SHELL" -$-c "git show :\"\$1\" | { set -$shopt; eslint --stdin --stdin-filename=\"\$1\"; }" --
+fi
