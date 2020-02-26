@@ -13,12 +13,8 @@ fi
 if command -v shellcheck >/dev/null
 then
     # FIXME | sed 's~/dev/stdin/~$1~', but without loosing exit code
-    git diff --cached --diff-filter=ACMR --name-only "$AGAINST" \
-            ':(exclude)*.js' ':(exclude)*.mjs' ':(exclude)*.jsx' \
-            ':(exclude)*.ts' ':(exclude)*.tsx' \
-            ':(exclude)*.css' ':(exclude)*.scss' \
-            ':(exclude)*.md' \
-            ':(exclude)*.storyshot' ':(exclude)*.storyshot' |
+    git diff --cached --diff-filter=ACMR --name-only "$AGAINST" |
+        grep -E '^(.*/)?([^/.]+|[^/]+\.sh)$' |
         $XARGS grep -El '^#!/bin/(sh|bash|dash|ksh)' |
         $XARGS -n1 "$SHELL" -$-c "set -$shopt; git show :\"\$1\" | shellcheck /dev/stdin #" --
 fi
