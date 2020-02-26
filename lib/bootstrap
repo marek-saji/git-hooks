@@ -43,6 +43,13 @@ fi
 export XARGS
 
 
+success_messages="All hooks seem happy.
+You are all good.
+Nice job.
+Keep it up.
+Everything is good with the world."
+
+
 run_hooks ()
 {
     hook_type="$( basename "$0" .sh )"
@@ -67,4 +74,9 @@ run_hooks ()
                 fi
             fi
         done
+    if [ "$VERBOSITY" -gt -1 ]
+    then
+        printf '✔  '
+        echo "$success_messages" | sort -R | head -n1
+    fi
 }
