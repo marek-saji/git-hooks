@@ -10,7 +10,7 @@ else
     shopt=
 fi
 
-if command -v shellcheck >/dev/null
+if command -v shellcheck >/dev/null 2>&1
 then
     # FIXME | sed 's~/dev/stdin/~$1~', but without loosing exit code
     git diff --cached --diff-filter=ACMR --name-only "$AGAINST" |
