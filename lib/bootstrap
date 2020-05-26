@@ -5,6 +5,8 @@ set -e
 # Redirect output to stderr.
 exec 1>&2
 
+GLOBAL_CONFIG_NAMESPACE="hooks"
+
 ARGV="$( ps -o command= -q "$PPID" || ps -o command= fd "$PPID" || : )"
 export ARGV
 # TODO Set VERBOSITY from --verbose | -v | -vv | -vvv etc.
@@ -62,8 +64,8 @@ run_hooks ()
         while read -r hook
         do
             name="$( basename "$hook" .sh  | sed 's/^[0-9_ -]*//' )"
-            CONFIG_NAMESPACE="hooks.$hook_type.$name"
-            export CONFIG_NAMESPACE
+            CONFIG_NAMESPACE="$GLOBAL_CONFIG_NAMESPACE.$hook_type.$name"
+            export GLOBAL_CONFIG_NAMESPACE CONFIG_NAMESPACE
             if [ "$( git config --get --type=bool --default=true "$CONFIG_NAMESPACE.enabled" )" = "true" ]
             then
                 if [ "$VERBOSITY" -gt 0 ]

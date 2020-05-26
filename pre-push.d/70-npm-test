@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+# TODO Lock switching branches while this hook is working
+# TODO On Ctrl-C ask if one wants to continue
+
 if [ "$VERBOSITY" -gt 1 ]
 then
     shopt=x
@@ -27,14 +30,36 @@ uses_jest ()
 
 if [ -n "$RANGE" ]
 then
-    if git diff --quiet
+    # TODO Shouldn’t this be a global function?
+    # TODO Auto–cleanup on next run (keep a pidfile)
+    workspace_enabled="$( git config --get --type=bool --default=false "$GLOBAL_CONFIG_NAMESPACE.tmpWorkspace" )"
+    if [ "$workspace_enabled" = "true" ]
     then
-        stashed=
+        mode=tmp_worktree
+        # TODO Handle names with spaces
+        workspace_files="$( git status --short --ignored | sed -E 's~^[[:space:]]*[^[:space:]]+[[:space:]]|/$~~g' )"
+        tmp_worktree="$( mktemp -d --suffix="_git-hook-npm-test" )"
+        git worktree add --detach "$tmp_worktree"
+        # TODO Register a trap to remove the worktree
+        cd "$tmp_worktree"
+        echo "$workspace_files" |
+            while read -r target
+            do
+                if [ -e "$OLDPWD/$target" ]
+                then
+                    mkdir -p "$( dirname "$target" )"
+                    ln -sv "$OLDPWD/$target" "$target"
+                fi
+            done
+    elif git diff --quiet
+    then
+        mode=
     else
+        mode=stashed
         git stash --keep-index --message="Stashed for running tests"
-        stashed=1
     fi
 
+    start="$( date +%s )"
     test_script="$( npm run | grep -A1 '^  test$' | tail -n+2 )"
     set +e
     if uses_jest "$test_script"
@@ -50,8 +75,23 @@ then
     fi
     test_exit_code=$?
     set -e
+    if [ "$mode" != "tmp_worktree" ]
+    then
+        end="$( date +%s )"
+        time="$(( end - start ))"
+        if [ "$time" -gt 5 ]
+        then
+            # TODO Don’t printf directly
+            printf "Your tests take a while to finish. You might be interested in enabling temporary worktree so that you can continue working (switch branches, commit etc.) while tests run.\n"
+            printf "    git config --set %s.tmpWorkspace true\n" "$GLOBAL_CONFIG_NAMESPACE"
+        fi
+    fi
 
-    if [ "$stashed" = 1 ]
+    if [ "$mode" = "tmp_worktree" ]
+    then
+        cd -
+        git worktree remove -f "$tmp_worktree"
+    elif [ "$mode" = "stashed" ]
     then
         git stash pop
     fi
