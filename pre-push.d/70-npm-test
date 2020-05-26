@@ -8,6 +8,23 @@ else
     shopt=
 fi
 
+uses_jest ()
+{
+    if echo "$test_script" | grep -q jest
+    then
+        return 0
+    fi
+
+    if echo "$test_script" | grep -Eq '^[[:space:]]*node([[:space:]]+-[^[:space:]]+)*[[:space:]][^[:space:]]+$'
+    then
+        script="$( echo "$test_script" | grep -Eo '[^[:space:]]+$' )"
+        grep -q '\<jest\>' "$script"
+        return $?
+    fi
+
+    return 1
+}
+
 if [ -n "$RANGE" ]
 then
     if git diff --quiet
@@ -20,7 +37,7 @@ then
 
     test_script="$( npm run | grep -A1 '^  test$' | tail -n+2 )"
     set +e
-    if echo "$test_script" | grep -q jest
+    if uses_jest "$test_script"
     then
         # TODO Use --changedSince if forcedFiles is not set
         # TODO If list is too long, fall–back to running all tests
