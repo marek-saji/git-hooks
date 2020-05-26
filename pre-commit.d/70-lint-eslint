@@ -10,11 +10,9 @@ else
     shopt=
 fi
 
-if command -v eslint >/dev/null
+if command -v eslint >/dev/null && eslint --print-config dummy.js >/dev/null 2>&1
 then
-    if eslint --print-config dummy.js >/dev/null 2>&1
-    then
-        git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- '*.js' '*.mjs' '*.jsx' '*.ts' '*.tsx' |
-            $XARGS -n1 "$SHELL" -$-c "git show :\"\$1\" | { set -$shopt; eslint --stdin --stdin-filename=\"\$1\"; }" --
-    fi
+    # TODO Run single eslint instance for files without local changes
+    git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- '*.js' '*.mjs' '*.jsx' '*.ts' '*.tsx' |
+        $XARGS -n1 "$SHELL" -$-c "git show :\"\$1\" | { set -$shopt; eslint --stdin --stdin-filename=\"\$1\"; }" --
 fi
