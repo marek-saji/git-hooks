@@ -42,6 +42,10 @@ else
 fi
 export XARGS
 
+# Commonly used to disable interactive mode
+CI=true
+export CI
+
 
 success_messages="All hooks seem happy.
 You are all good.
