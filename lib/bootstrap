@@ -7,6 +7,19 @@ exec 1>&2
 
 GLOBAL_CONFIG_NAMESPACE="hooks"
 
+if test -t 1 && test "$( tput colors )" -gt 8 2>/dev/null
+then
+    TPUT_PRIMARY="$( tput sgr0 )"
+    TPUT_SECONDARY="$( tput dim )"
+    TPUT_ERROR="$( tput setaf 1 )"
+    TPUT_WARNING="$( tput setaf 3 )"
+else
+    TPUT_PRIMARY=""
+    TPUT_SECONDARY=""
+    TPUT_ERROR=""
+    TPUT_WARNING=""
+fi
+
 ARGV="$( ps -o command= -q "$PPID" || ps -o command= fd "$PPID" || : )"
 export ARGV
 # TODO Set VERBOSITY from --verbose | -v | -vv | -vvv etc.
@@ -56,6 +69,31 @@ Keep it up.
 Everything is good with the world."
 
 
+cprintf ()
+{
+    colour="$1"
+    prefix="$2"
+    fmt="$3"
+    shift 3
+    # shellcheck disable=SC2059
+    printf "${colour}${prefix}${fmt}${TPUT_PRIMARY}\n" "$@"
+}
+
+error ()
+{
+    cprintf "$TPUT_ERROR" "ERROR: " "$@" 1>&2
+}
+
+warning ()
+{
+    cprintf "$TPUT_WARNING" "WARNING: " "$@"
+}
+
+secondary ()
+{
+    cprintf "$TPUT_SECONDARY" "" "$@"
+}
+
 run_hooks ()
 {
     hook_type="$( basename "$0" .sh )"
@@ -70,12 +108,12 @@ run_hooks ()
             then
                 if [ "$VERBOSITY" -gt 0 ]
                 then
-                    printf "\e[2m%s\e[m\n" "$name"
+                    secondary "$name"
                 fi
                 # shellcheck disable=SC1090
                 if ! ( . "$hook" )
                 then
-                    printf "\e[1;41mERROR: %s “%s” hook failed\e[m\n" "$hook_type" "$name" 1>&2
+                    error "%s “%s” hook failed" "$hook_type" "$name"
                     false
                 fi
             fi
