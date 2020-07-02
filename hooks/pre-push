@@ -8,8 +8,17 @@ URL="$2"
 
 z40=0000000000000000000000000000000000000000
 
-while read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA
+while read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA REST
 do
+    if [ "$REMOTE_SHA" != $z40 ]
+    then
+        if [ "$( git cat-file -t "$REMOTE_SHA" 2>/dev/null )" != "commit" ]
+        then
+            error "Remote commit %s is not available locally. Try fetching first." "$REMOTE_SHA" 1>&2
+            exit 65
+        fi
+    fi
+
     if [ "$LOCAL_SHA" = $z40 ]
     then
         # Handle delete
