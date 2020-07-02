@@ -61,15 +61,26 @@ Configuration
    run.
 
 
-### pre-push npm-test
+### pre-push: npm-test
 
-This hook detects if [jest] is being used for testing and if so, only
-runs tests that are related to modified files, but that heuristic is not
-perfect. This option enables you to additionally always run selected
-tests, e.g.
+Detects if [jest] is being used for testing and if so, only runs tests
+that are related to modified files, but that heuristic is not perfect.
+This option enables you to additionally always run selected tests, e.g.
 
     git config hooks.pre-push.npm-test.forcedFiles tests/storybook.test.js
 
 
 [jest]: https://jestjs.io/
 [`--findRelatedTests`]: https://jestjs.io/docs/en/cli#--findrelatedtests-spaceseparatedlistofsourcefiles
+
+
+### pre-push: branch-name
+
+Allows to set up a [extended grep regular expression] to match branches when pushing.
+
+    git config hooks.pre-push.branch-name.allow-regexp '^(feature|fix|doc|chore)/'
+
+You don’t have to list your main branch.
+
+
+[extended grep regular expression]: https://www.gnu.org/software/grep/manual/grep.html#Basic-vs-Extended
