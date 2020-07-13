@@ -37,7 +37,7 @@ then
     then
         mode=tmp_worktree
         # TODO Handle names with spaces
-        workspace_files="$( git status --short --ignored | sed -E 's~^[[:space:]]*[^[:space:]]+[[:space:]]|/$~~g' )"
+        workspace_files="$( git status --short --ignored | grep '^!! ' | cut -b4- | sed 's~/$~~' )"
         tmp_worktree="$( mktemp -d --suffix="_git-hook-npm-test" )"
         git worktree add --detach "$tmp_worktree"
         # TODO Register a trap to remove the worktree
