@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+
+if [ -n "$RANGE" ]
+then
+    commit="$(
+        git rev-list -E --grep '\<(WIP|TODO)\>' --format="%B" "$RANGE"
+    )"
+    if [ -n "$commit" ]
+    then
+        error "Found WIP|TODO commit(s) in %s, not pushing:\n%s" "$LOCAL_REF" "$commit"
+        exit 1
+    fi
+fi
