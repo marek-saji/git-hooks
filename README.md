@@ -1,6 +1,11 @@
 git hooks
 =========
 
+Opinionated set of git hooks.
+
+At the moment supports JavaScript, CSS, shell scripts and markdown files.
+
+
 Installation
 ------------
 
@@ -71,7 +76,6 @@ This option enables you to additionally always run selected tests, e.g.
 
 
 [jest]: https://jestjs.io/
-[`--findRelatedTests`]: https://jestjs.io/docs/en/cli#--findrelatedtests-spaceseparatedlistofsourcefiles
 
 
 ### pre-push: branch-name
