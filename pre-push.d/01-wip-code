@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+
+if [ -n "$RANGE" ]
+then
+    regex='\<(WIP|TODO)\>'
+    if
+        git diff --pickaxe-regex -S "$regex" "$RANGE" | grep -E "^\\+ .*$regex"
+    then
+        error 'Found changes introducing WIP|TODO. Resolve before pushing.'
+    fi
+fi
