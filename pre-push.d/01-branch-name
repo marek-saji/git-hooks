@@ -9,6 +9,11 @@ then
 fi
 
 remote_branch="$( echo "$REMOTE_REF" | sed 's~refs/heads/~~' )"
+if echo "$remote_branch" | grep -qE '^(master|main|development|staging|production)$'
+then
+    return
+fi
+
 main_branch="$( git symbolic-ref "refs/remotes/$REMOTE/HEAD" | sed 's~refs/remotes/[^\/]*/~~' )"
 if [ "$remote_branch" = "$main_branch" ]
 then
