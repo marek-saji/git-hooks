@@ -9,6 +9,12 @@ then
 fi
 
 remote_branch="$( echo "$REMOTE_REF" | sed 's~refs/heads/~~' )"
+# Not a branch head (e.g. tag)
+if [ "$remote_branch" = "$REMOTE_REF" ]
+then
+    return
+fi
+
 if echo "$remote_branch" | grep -qE '^(master|main|development|staging|production)$'
 then
     return
