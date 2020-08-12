@@ -8,5 +8,6 @@ then
         git diff --pickaxe-regex -S "$regex" "$RANGE" | grep -E "^\\+ .*$regex"
     then
         error 'Found changes introducing WIP|TODO. Resolve before pushing.'
+        false
     fi
 fi
