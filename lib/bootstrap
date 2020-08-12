@@ -115,6 +115,7 @@ run_hooks ()
                 if ! ( . "$hook" )
                 then
                     error "%s “%s” hook failed" "$hook_type" "$name"
+                    secondary "To disable, run with: -c hooks.%s.%s.enabled=false" "$hook_type" "$name"
                     false
                 fi
             fi
