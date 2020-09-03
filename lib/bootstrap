@@ -35,7 +35,7 @@ export VERBOSITY
 PACKAGE_DIR="$( dirname "$( readlink "$0" )" )/.."
 export PACKAGE_DIR
 
-BASE_BRANCH=master
+BASE_BRANCH="$( git config --get-regexp '^branch\..*\.remote' | head -n1 | cut -d. -f2 )"
 export BASE_BRANCH
 
 if git rev-parse --verify HEAD >/dev/null 2>&1
