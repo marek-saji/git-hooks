@@ -105,6 +105,6 @@ then
 
     if [ "$test_exit_code" != "0" ]
     then
-        false
+        return "$test_exit_code"
     fi
 fi
