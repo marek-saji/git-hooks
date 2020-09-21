@@ -39,7 +39,14 @@ then
         # TODO Handle names with spaces
         workspace_files="$( git status --short --ignored | grep '^!! ' | cut -b4- | sed 's~/$~~' )"
         tmp_worktree="$( mktemp -d --suffix="_git-hook-npm-test" )"
+        set +e
         git worktree add --detach "$tmp_worktree"
+        exit_status=$?
+        set -e
+        if [ "$exit_status" != 0 ]
+        then
+            return "$exit_status"
+        fi
         # TODO Register a trap to remove the worktree
         cd "$tmp_worktree"
         echo "$workspace_files" |
