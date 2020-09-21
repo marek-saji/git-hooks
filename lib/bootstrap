@@ -103,9 +103,10 @@ run_hooks ()
         while read -r hook
         do
             name="$( basename "$hook" .sh  | sed 's/^[0-9_ -]*//' )"
-            CONFIG_NAMESPACE="$GLOBAL_CONFIG_NAMESPACE.$hook_type.$name"
+            CONFIG_NAMESPACE="$GLOBAL_CONFIG_NAMESPACE.$name"
+            enabled_config_name="$CONFIG_NAMESPACE.enabled"
             export GLOBAL_CONFIG_NAMESPACE CONFIG_NAMESPACE
-            if [ "$( git config --get --type=bool --default=true "$CONFIG_NAMESPACE.enabled" )" = "true" ]
+            if [ "$( git config --get --type=bool --default=true "$enabled_config_name" )" = "true" ]
             then
                 if [ "$VERBOSITY" -gt 0 ]
                 then
@@ -115,7 +116,7 @@ run_hooks ()
                 if ! ( . "$hook" )
                 then
                     error "%s “%s” hook failed" "$hook_type" "$name"
-                    secondary "To disable, run with: -c hooks.%s.%s.enabled=false" "$hook_type" "$name"
+                    secondary "To disable, run with: -c %s=false" "$enabled_config_name"
                     false
                 fi
             fi
