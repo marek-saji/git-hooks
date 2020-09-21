@@ -7,8 +7,10 @@ set -e
 if [ "$VERBOSITY" -gt 1 ]
 then
     shopt=x
+    npm_run_args=
 else
     shopt=
+    npm_run_args="--silent"
 fi
 
 uses_jest ()
@@ -76,9 +78,9 @@ then
         {
             git config --get "$CONFIG_NAMESPACE.forcedFiles" || :
             git diff --name-only "$RANGE"
-        } | $XARGS "$SHELL" -$-"$shopt"c 'npm test --silent -- --ci --color --coverage=no --passWithNoTests --findRelatedTests "$@"' --
+        } | $XARGS "$SHELL" -$-"$shopt"c "npm test $npm_run_args -- --ci --color --coverage=no --passWithNoTests --findRelatedTests \"\$@\"" --
     else
-        npm test --silent
+        npm test $npm_run_args
     fi
     test_exit_code=$?
     set -e
