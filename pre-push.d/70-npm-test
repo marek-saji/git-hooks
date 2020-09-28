@@ -32,9 +32,10 @@ uses_jest ()
 
 if [ -n "$RANGE" ]
 then
-    # TODO Shouldn’t this be a global function?
+    # TODO This should be a globa thing
     # TODO Auto–cleanup on next run (keep a pidfile)
-    workspace_enabled="$( git config --get --type=bool --default=false "$GLOBAL_CONFIG_NAMESPACE.tmpWorkspace" )"
+    workspace_enabled_config="$GLOBAL_CONFIG_NAMESPACE.tmpWorkspace"
+    workspace_enabled="$( git config --get --type=bool --default=false "$workspace_enabled_config" )"
     if [ "$workspace_enabled" = "true" ]
     then
         mode=tmp_worktree
@@ -92,7 +93,7 @@ then
         then
             # TODO Don’t printf directly
             printf "Your tests take a while to finish. You might be interested in enabling temporary worktree so that you can continue working (switch branches, commit etc.) while tests run.\n"
-            printf "    git config --set %s.tmpWorkspace true\n" "$GLOBAL_CONFIG_NAMESPACE"
+            printf "    git config %s true\n" "$workspace_enabled_config"
         fi
     fi
 
