@@ -12,9 +12,21 @@ fi
 
 if command -v shellcheck >/dev/null 2>&1
 then
-    # FIXME | sed 's~/dev/stdin/~$1~', but without loosing exit code
-    git diff --cached --diff-filter=ACMR --name-only "$AGAINST" |
-        grep -E '^(.*/)?([^/.]+|[^/]+\.sh)$' |
-        $XARGS grep -El '^#!/bin/(sh|bash|dash|ksh)' |
-        $XARGS -n1 "$SHELL" -$-c "set -$shopt; git show :\"\$1\" | shellcheck /dev/stdin #" --
+    # TODO Run git-diff once?
+    count="$(
+        git diff --cached --diff-filter=ACMR --name-only "$AGAINST" |
+            grep -E '^(.*/)?([^/.]+|[^/]+\.sh)$' |
+            $XARGS grep -El '^#!/bin/(sh|bash|dash|ksh)' |
+            wc -l
+    )"
+    if [ "$count" -gt 0 ]
+    then
+        secondary "Running shellcheck on %d files." "$count"
+
+        # FIXME | sed 's~/dev/stdin/~$1~', but without loosing exit code
+        git diff --cached --diff-filter=ACMR --name-only "$AGAINST" |
+            grep -E '^(.*/)?([^/.]+|[^/]+\.sh)$' |
+            $XARGS grep -El '^#!/bin/(sh|bash|dash|ksh)' |
+            $XARGS -n1 "$SHELL" -$-c "set -$shopt; git show :\"\$1\" | shellcheck /dev/stdin #" --
+    fi
 fi

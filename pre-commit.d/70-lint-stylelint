@@ -10,10 +10,17 @@ else
     shopt=
 fi
 
-if command -v stylelint >/dev/null
+if command -v stylelint >/dev/null && stylelint --print-config dummy.css >/dev/null 2>&1
 then
-    if stylelint --print-config dummy.css >/dev/null 2>&1
+    # TODO Run git-diff once?
+    count="$(
+        git diff --cached --diff-filter=ACMR --name-only "$AGAINST" '*.css' '*.scss' \
+            | wc -l
+    )"
+    if [ "$count" -gt 0 ]
     then
+        secondary "Running stylelint on %d files." "$count"
+
         # TODO Run single instance for files without local changes
         git diff --cached --diff-filter=ACMR --name-only "$AGAINST" '*.css' |
             $XARGS -n1 "$SHELL" -$-c "git show :\"\$1\" | { set -$shopt; stylelint --stdin-filename=\"\$1\"; }" --
