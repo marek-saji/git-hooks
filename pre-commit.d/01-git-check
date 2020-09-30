@@ -6,6 +6,6 @@ set -e
 #      Or maybe split it into two hooks each with separate config
 
 # Check for whitespace errors and conflict markers
-git diff-index --check --cached "$AGAINST" -- ':(exclude)*.storyshot' ':(exclude)*.snap'
+git diff-index --check --cached "$AGAINST" -- ':(exclude)*.patch' ':(exclude)*/__snapshots__/*'
 # Be less strict on whitespace with generated files
-git -c core.whitespace="-blank-at-eol,-blank-at-eof,-trailing-space" diff-index --check --cached "$AGAINST" -- '*.storyshot' '*.snap'
+git -c core.whitespace="-blank-at-eol,-blank-at-eof,-trailing-space" diff-index --check --cached "$AGAINST" -- ':(exclude)*.patch' '*/__snapshots__/*'
