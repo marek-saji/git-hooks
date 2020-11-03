@@ -99,6 +99,8 @@ run_hooks ()
 {
     hook_type="$( basename "$0" .sh )"
     dir="$PACKAGE_DIR/$hook_type.d"
+    # TODO Support global hooks in ~/.config/githooks (overwritable in git config)
+    # TODO Support local hooks in ./.githooks (overwritable in git config)
     find "$dir" -maxdepth 1 -type f -executable | sort |
         while read -r hook
         do
