@@ -30,7 +30,9 @@ uses_jest ()
     return 1
 }
 
-if [ -n "$RANGE" ]
+if [ -n "$RANGE" ] && ! git diff --quiet "$RANGE" -- \
+    ':(exclude,icase)./docs/' ':(exclude,icase)./documentation/' \
+    ':(exclude,icase)README' ':(exclude,icase)README.md'
 then
     # TODO This should be a globa thing
     # TODO Auto–cleanup on next run (keep a pidfile)
