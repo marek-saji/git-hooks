@@ -15,7 +15,7 @@ fi
 
 uses_jest ()
 {
-    if echo "$test_script" | grep -q jest
+    if echo "$test_script" | grep -Eq '\b(jest|(react-scripts|craco)[[:space:]]+test)\b'
     then
         return 0
     fi
