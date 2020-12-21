@@ -16,7 +16,16 @@ then
         # TODO Run single instance for files without local changes
         # TODO Re–use code from pre-commit. When ready, run other linters as well
         # We are disabling import/no-unused-modules, because it increases linting time significantly
+        total="$( git diff --name-only "$RANGE" -- '*.js' '*.mjs' '*.jsx' '*.ts' '*.tsx' | wc -l )"
         git diff --name-only "$RANGE" -- '*.js' '*.mjs' '*.jsx' '*.ts' '*.tsx' |
-            $XARGS -n1 "$SHELL" -$-c "git show :\"\$1\" | { set -$shopt; eslint --stdin --stdin-filename=\"\$1\" --rule='import/no-unused-modules:0' ; }" --
+            nl |
+            while read -r number file
+            do
+                printf "%d/%d: " "$number" "$total" 1>&2
+                git show :"$file" | {
+                    set -"$shopt"
+                    eslint --rule='import/no-unused-modules:0' --stdin --stdin-filename="$file"
+                }
+            done
     fi
 fi
