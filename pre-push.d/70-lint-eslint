@@ -15,7 +15,8 @@ then
         # FIXME Check if files exist
         # TODO Run single instance for files without local changes
         # TODO Re–use code from pre-commit. When ready, run other linters as well
+        # We are disabling import/no-unused-modules, because it increases linting time significantly
         git diff --name-only "$RANGE" -- '*.js' '*.mjs' '*.jsx' '*.ts' '*.tsx' |
-            $XARGS -n1 "$SHELL" -$-c "git show :\"\$1\" | { set -$shopt; eslint --stdin --stdin-filename=\"\$1\"; }" --
+            $XARGS -n1 "$SHELL" -$-c "git show :\"\$1\" | { set -$shopt; eslint --stdin --stdin-filename=\"\$1\" --rule='import/no-unused-modules:0' ; }" --
     fi
 fi

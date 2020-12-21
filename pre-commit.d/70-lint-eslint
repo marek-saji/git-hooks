@@ -22,7 +22,8 @@ then
         secondary "Running eslint on %d files." "$count"
 
         # TODO Run single eslint instance for files without local changes
+        # We are disabling import/no-unused-modules, because it increases linting time significantly
         git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- '*.js' '*.mjs' '*.jsx' '*.ts' '*.tsx' |
-            $XARGS -n1 "$SHELL" -$-c "git show :\"\$1\" | { set -$shopt; eslint --stdin --stdin-filename=\"\$1\"; }" --
+            $XARGS -n1 "$SHELL" -$-c "git show :\"\$1\" | { set -$shopt; eslint --stdin --stdin-filename=\"\$1\" --rule='import/no-unused-modules:0'; }" --
     fi
 fi
