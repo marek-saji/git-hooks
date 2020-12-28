@@ -81,7 +81,7 @@ then
         {
             git config --get "$CONFIG_NAMESPACE.forcedFiles" || :
             git diff --name-only "$RANGE"
-        } | $XARGS "$SHELL" -$-"$shopt"c "npm test $npm_run_args -- --ci --color --coverage=no --passWithNoTests --findRelatedTests \"\$@\"" --
+        } | xargs "$SHELL" -$-"$shopt"c "npm test $npm_run_args -- --ci --color --coverage=no --passWithNoTests --findRelatedTests \"\$@\"" --
     else
         npm test $npm_run_args
     fi

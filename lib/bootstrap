@@ -48,15 +48,16 @@ fi
 export AGAINST
 
 XARGS_MAX_ARGS=512
-if xargs --help | grep -q -- --no-run-if-empty
+if command xargs --help | grep -q -- --no-run-if-empty
 then
-    XARGS="xargs -n $XARGS_MAX_ARGS --no-run-if-empty"
+    # shellcheck disable=SC2139
+    alias xargs="command xargs -n $XARGS_MAX_ARGS --no-run-if-empty"
 else
     # On MacOS xargs does not have that option (which is a GNU
     # extension), but acts that way by default
-    XARGS="xargs -n $XARGS_MAX_ARGS"
+    # shellcheck disable=SC2139
+    alias xargs="command xargs -n $XARGS_MAX_ARGS"
 fi
-export XARGS
 
 # Commonly used to disable interactive mode
 CI=true

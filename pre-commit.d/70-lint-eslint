@@ -17,7 +17,7 @@ then
         # No unstaged modifications -- running eslint on files
 
         git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- '*.js' '*.mjs' '*.jsx' '*.ts' '*.tsx' |
-            $XARGS sh -$-"${shopt}" -c "eslint --rule='import/no-unused-modules:0' \"\$@\"" --
+            xargs sh -$-"${shopt}" -c "eslint --rule='import/no-unused-modules:0' \"\$@\"" --
     else
         # Some staged modifications -- running eslint on staged diffs
 
