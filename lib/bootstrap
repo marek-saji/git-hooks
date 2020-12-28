@@ -1,6 +1,6 @@
 #!/bin/sh
 # shellcheck disable=SC1111
-set -e
+set -ue
 
 # Redirect output to stderr.
 exec 1>&2

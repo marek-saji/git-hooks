@@ -1,5 +1,5 @@
 #!/bin/sh
-set -e
+set -ue
 
 # TODO Introduce $CONFIG_NAMESPACE.{conflictMarkers,whitespace}.exclude
 #      and remove hardcoded excludes from here.

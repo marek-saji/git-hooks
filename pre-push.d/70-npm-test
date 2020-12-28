@@ -1,5 +1,5 @@
 #!/bin/sh
-set -e
+set -ue
 
 # TODO Lock switching branches while this hook is working
 # TODO On Ctrl-C ask if one wants to continue
