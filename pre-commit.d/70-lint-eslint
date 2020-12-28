@@ -12,27 +12,36 @@ fi
 
 if command -v eslint >/dev/null && eslint --print-config dummy.js >/dev/null 2>&1
 then
-    # TODO Run git-diff once?
-    count="$(
-        git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- '*.js' '*.mjs' '*.jsx' '*.ts' '*.tsx' \
-            | wc -l
-    )"
-    if [ "$count" -gt 0 ]
+    if git diff --quiet -- '*.js' '*.mjs' '*.jsx' '*.ts' '*.tsx'
     then
-        secondary "Running eslint on %d files." "$count"
+        # No unstaged modifications -- running eslint on files
 
-        # TODO Run single eslint instance for files without local changes
-        # We are disabling import/no-unused-modules, because it increases linting time significantly
-        total="$( git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- '*.js' '*.mjs' '*.jsx' '*.ts' '*.tsx' | wc -l )"
         git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- '*.js' '*.mjs' '*.jsx' '*.ts' '*.tsx' |
-            nl |
-            while read -r number file
-            do
-                printf "%d/%d: " "$number" "$total" 1>&2
-                git show :"$file" | {
-                    set -"$shopt"
-                    eslint --rule='import/no-unused-modules:0' --stdin --stdin-filename="$file"
-                }
-            done
+            $XARGS sh -$-"${shopt}" -c "eslint --rule='import/no-unused-modules:0' \"\$@\"" --
+    else
+        # Some staged modifications -- running eslint on staged diffs
+
+        # TODO Run git-diff once?
+        count="$(
+            git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- '*.js' '*.mjs' '*.jsx' '*.ts' '*.tsx' \
+                | wc -l
+        )"
+        if [ "$count" -gt 0 ]
+        then
+            secondary "Running eslint on %d files." "$count"
+
+            # We are disabling import/no-unused-modules, because it increases linting time significantly
+            total="$( git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- '*.js' '*.mjs' '*.jsx' '*.ts' '*.tsx' | wc -l )"
+            git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- '*.js' '*.mjs' '*.jsx' '*.ts' '*.tsx' |
+                nl |
+                while read -r number file
+                do
+                    printf "%d/%d: " "$number" "$total" 1>&2
+                    git show :"$file" | {
+                        set -"$shopt"
+                        eslint --rule='import/no-unused-modules:0' --stdin --stdin-filename="$file"
+                    }
+                done
+        fi
     fi
 fi
