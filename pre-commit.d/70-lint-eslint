@@ -10,38 +10,44 @@ else
     shopt=
 fi
 
-if command -v eslint >/dev/null && eslint --print-config dummy.js >/dev/null 2>&1
+if [ -n "$AGAINST" ]
 then
-    if git diff --quiet -- ':(icase)*.js' ':(icase)*.mjs' ':(icase)*.jsx' ':(icase)*.ts' ':(icase)*.tsx'
+    if command -v eslint >/dev/null && eslint --print-config dummy.js >/dev/null 2>&1
     then
-        # No unstaged modifications -- running eslint on files
-
-        git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- ':(icase)*.js' ':(icase)*.mjs' ':(icase)*.jsx' ':(icase)*.ts' ':(icase)*.tsx' |
-            xargs sh -$-"${shopt}" -c "eslint --rule='import/no-unused-modules:0' \"\$@\"" --
-    else
-        # Some staged modifications -- running eslint on staged diffs
-
-        # TODO Run git-diff once?
-        count="$(
-            git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- ':(icase)*.js' ':(icase)*.mjs' ':(icase)*.jsx' ':(icase)*.ts' ':(icase)*.tsx' \
-                | wc -l
-        )"
-        if [ "$count" -gt 0 ]
+        if git diff --quiet -- ':(icase)*.js' ':(icase)*.mjs' ':(icase)*.jsx' ':(icase)*.ts' ':(icase)*.tsx'
         then
-            secondary "Running eslint on %d files." "$count"
+            # No unstaged modifications -- running eslint on files
+
+            git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- ':(icase)*.js' ':(icase)*.mjs' ':(icase)*.jsx' ':(icase)*.ts' ':(icase)*.tsx' |
+                xargs sh -$-"${shopt}" -c "eslint --rule='import/no-unused-modules:0' \"\$@\"" --
+        else
+            # Some staged modifications -- running eslint on staged diffs
+
+            # TODO Run git-diff once?
+            # FIXME Check if files exist
+            # TODO When running one–by–one run all and report all broken at the end
 
             # We are disabling import/no-unused-modules, because it increases linting time significantly
-            total="$( git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- ':(icase)*.js' ':(icase)*.mjs' ':(icase)*.jsx' ':(icase)*.ts' ':(icase)*.tsx' | wc -l )"
-            git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- ':(icase)*.js' ':(icase)*.mjs' ':(icase)*.jsx' ':(icase)*.ts' ':(icase)*.tsx' |
-                nl |
-                while read -r number file
-                do
-                    printf "%d/%d: " "$number" "$total" 1>&2
-                    git show :"$file" | {
-                        set -"$shopt"
-                        eslint --rule='import/no-unused-modules:0' --stdin --stdin-filename="$file"
-                    }
-                done
+            total="$(
+                git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- ':(icase)*.js' ':(icase)*.mjs' ':(icase)*.jsx' ':(icase)*.ts' ':(icase)*.tsx' \
+                    | wc -l
+            )"
+            if [ "$total" -gt 0 ]
+            then
+                secondary "Running eslint on %d files." "$total"
+
+                # We are disabling import/no-unused-modules, because it increases linting time significantly
+                git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- ':(icase)*.js' ':(icase)*.mjs' ':(icase)*.jsx' ':(icase)*.ts' ':(icase)*.tsx' |
+                    nl |
+                    while read -r number file
+                    do
+                        printf "%d/%d: " "$number" "$total" 1>&2
+                        git show :"$file" | {
+                            set -"$shopt"
+                            eslint --rule='import/no-unused-modules:0' --stdin --stdin-filename="$file"
+                        }
+                    done
+            fi
         fi
     fi
 fi

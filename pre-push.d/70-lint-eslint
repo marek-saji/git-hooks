@@ -1,41 +1,6 @@
 #!/bin/sh
 set -ue
 
-if [ "$VERBOSITY" -gt 1 ]
-then
-    shopt=x
-else
-    shopt=
-fi
-
-if [ -n "$RANGE" ]
-then
-    if command -v eslint >/dev/null && eslint --print-config dummy.js >/dev/null 2>&1
-    then
-        if git diff --quiet -- ':(icase)*.js' ':(icase)*.mjs' ':(icase)*.jsx' ':(icase)*.ts' ':(icase)*.tsx'
-        then
-            # No unstaged modifications -- running eslint on files
-
-            git diff --diff-filter=ACMR --name-only "$RANGE" -- ':(icase)*.js' ':(icase)*.mjs' ':(icase)*.jsx' ':(icase)*.ts' ':(icase)*.tsx' |
-                xargs sh -$-"${shopt}" -c "eslint --rule='import/no-unused-modules:0' \"\$@\"" --
-        else
-            # Some staged modifications -- running eslint on staged diffs
-
-            # FIXME Check if files exist
-            # TODO Re–use code from pre-commit. When ready, run other linters as well
-            # TODO When running one–by–one run all and report all broken at the end
-            # We are disabling import/no-unused-modules, because it increases linting time significantly
-            total="$( git diff --name-only "$RANGE" -- ':(icase)*.js' ':(icase)*.mjs' ':(icase)*.jsx' ':(icase)*.ts' ':(icase)*.tsx' | wc -l )"
-            git diff --name-only "$RANGE" -- ':(icase)*.js' ':(icase)*.mjs' ':(icase)*.jsx' ':(icase)*.ts' ':(icase)*.tsx' |
-                nl |
-                while read -r number file
-                do
-                    printf "%d/%d: " "$number" "$total" 1>&2
-                    git show :"$file" | {
-                        set -"$shopt"
-                        eslint --rule='import/no-unused-modules:0' --stdin --stdin-filename="$file"
-                    }
-                done
-        fi
-    fi
-fi
+export AGAINST="$RANGE"
+# shellcheck disable=SC1091
+. ../pre-commit.d/70-lint-eslint
