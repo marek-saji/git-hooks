@@ -14,11 +14,11 @@ if command -v stylelint >/dev/null && stylelint --print-config dummy.css >/dev/n
 then
     # TODO Run git-diff once?
     css_total="$(
-        git diff --cached --diff-filter=ACMR --name-only "$AGAINST" '*.css' \
+        git diff --cached --diff-filter=ACMR --name-only "$AGAINST" ':(icase)*.css' \
             | wc -l
     )"
     scss_total="$(
-        git diff --cached --diff-filter=ACMR --name-only "$AGAINST" '*.scss' \
+        git diff --cached --diff-filter=ACMR --name-only "$AGAINST" ':(icase)*.scss' \
             | wc -l
     )"
     total=$(( css_total + scss_total ))
@@ -28,7 +28,7 @@ then
         secondary "Running stylelint on %d files." "$total"
 
         # TODO Run single instance for files without local changes
-        git diff --cached --diff-filter=ACMR --name-only "$AGAINST" '*.css' |
+        git diff --cached --diff-filter=ACMR --name-only "$AGAINST" ':(icase)*.css' |
             nl |
             while read -r number file
             do
@@ -38,7 +38,7 @@ then
                     stylelint --stdin-filename="$file"
                 }
             done
-        git diff --cached --diff-filter=ACMR --name-only "$AGAINST" '*.scss' |
+        git diff --cached --diff-filter=ACMR --name-only "$AGAINST" ':(icase)*.scss' |
             nl -v$(( css_total + 1 )) |
             while read -r number file
             do

@@ -12,18 +12,18 @@ fi
 
 if command -v eslint >/dev/null && eslint --print-config dummy.js >/dev/null 2>&1
 then
-    if git diff --quiet -- '*.js' '*.mjs' '*.jsx' '*.ts' '*.tsx'
+    if git diff --quiet -- ':(icase)*.js' ':(icase)*.mjs' ':(icase)*.jsx' ':(icase)*.ts' ':(icase)*.tsx'
     then
         # No unstaged modifications -- running eslint on files
 
-        git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- '*.js' '*.mjs' '*.jsx' '*.ts' '*.tsx' |
+        git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- ':(icase)*.js' ':(icase)*.mjs' ':(icase)*.jsx' ':(icase)*.ts' ':(icase)*.tsx' |
             xargs sh -$-"${shopt}" -c "eslint --rule='import/no-unused-modules:0' \"\$@\"" --
     else
         # Some staged modifications -- running eslint on staged diffs
 
         # TODO Run git-diff once?
         count="$(
-            git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- '*.js' '*.mjs' '*.jsx' '*.ts' '*.tsx' \
+            git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- ':(icase)*.js' ':(icase)*.mjs' ':(icase)*.jsx' ':(icase)*.ts' ':(icase)*.tsx' \
                 | wc -l
         )"
         if [ "$count" -gt 0 ]
@@ -31,8 +31,8 @@ then
             secondary "Running eslint on %d files." "$count"
 
             # We are disabling import/no-unused-modules, because it increases linting time significantly
-            total="$( git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- '*.js' '*.mjs' '*.jsx' '*.ts' '*.tsx' | wc -l )"
-            git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- '*.js' '*.mjs' '*.jsx' '*.ts' '*.tsx' |
+            total="$( git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- ':(icase)*.js' ':(icase)*.mjs' ':(icase)*.jsx' ':(icase)*.ts' ':(icase)*.tsx' | wc -l )"
+            git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- ':(icase)*.js' ':(icase)*.mjs' ':(icase)*.jsx' ':(icase)*.ts' ':(icase)*.tsx' |
                 nl |
                 while read -r number file
                 do
