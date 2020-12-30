@@ -16,11 +16,19 @@ then
     then
         set -- ':(icase)*.js' ':(icase)*.mjs' ':(icase)*.cjs' ':(icase)*.jsx' ':(icase)*.ts' ':(icase)*.tsx'
 
+        # Don’t use --cached when AGAINST is a range (i.e. we are running pre-push hook)
+        if echo "$AGAINST" | grep -q -F ".."
+        then
+            diff_opt=
+        else
+            diff_opt="--cached"
+        fi
+
         if git diff --quiet -- "$@"
         then
             # No unstaged modifications -- running eslint on files
 
-            git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- "$@" |
+            git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" -- "$@" |
                 xargs sh -$-"${shopt}" -c "eslint --rule='import/no-unused-modules:0' \"\$@\"" --
         else
             # Some staged modifications -- running eslint on staged diffs
@@ -31,7 +39,7 @@ then
 
             # We are disabling import/no-unused-modules, because it increases linting time significantly
             total="$(
-                git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- "$@" \
+                git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" -- "$@" \
                     | wc -l
             )"
             if [ "$total" -gt 0 ]
@@ -39,7 +47,7 @@ then
                 secondary "Running eslint on %d files." "$total"
 
                 # We are disabling import/no-unused-modules, because it increases linting time significantly
-                git diff --cached --diff-filter=ACMR --name-only "$AGAINST" -- "$@" |
+                git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" -- "$@" |
                     nl |
                     while read -r number file
                     do

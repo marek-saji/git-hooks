@@ -2,5 +2,5 @@
 set -ue
 
 export AGAINST="$RANGE"
-# shellcheck disable=SC1091
-. ../pre-commit.d/70-lint-eslint
+# shellcheck disable=SC1090
+. "$PACKAGE_DIR/pre-commit.d/70-lint-eslint"
