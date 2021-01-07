@@ -108,13 +108,17 @@ run_hooks ()
             name="$( basename "$hook" .sh  | sed 's/^[0-9_ -]*//' )"
             CONFIG_NAMESPACE="$GLOBAL_CONFIG_NAMESPACE.$name"
             enabled_config_name="$CONFIG_NAMESPACE.enabled"
-            export GLOBAL_CONFIG_NAMESPACE CONFIG_NAMESPACE
-            if [ "$( git config --get --type=bool --default=true "$enabled_config_name" )" = "true" ]
+            enabled_shorthand_config_name="$CONFIG_NAMESPACE"
+            if
+                [ "$( git config --get --type=bool --default=true "$enabled_shorthand_config_name" )" != "false" ] &&
+                [ "$( git config --get --type=bool --default=true "$enabled_config_name" )" != "false" ]
             then
                 if [ "$VERBOSITY" -gt 0 ]
                 then
                     secondary "$name"
                 fi
+
+                export GLOBAL_CONFIG_NAMESPACE CONFIG_NAMESPACE
                 # shellcheck disable=SC1090
                 if ! ( . "$hook" )
                 then

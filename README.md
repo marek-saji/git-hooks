@@ -47,6 +47,10 @@ Configuration
 
        git -c hooks.npm-test.enabled=false push
 
+   As a shortcut you can omit `.enabled`:
+
+       git -c hooks.npm-test=false push
+
 2. Changing verbosity
 
        git config --type=int hooks.verbosity 2
