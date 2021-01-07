@@ -40,8 +40,12 @@ Configuration
 
 1. Disabling a hook
 
-       git config --type=int hooks.$HOOK_TYPE.$HOOK_NAME.enabled false
-       # e.g. hooks.pre-commit.lint.enabled
+       git config --type=int hooks.$HOOK_NAME.enabled false
+       # e.g. hooks.lint.enabled
+
+   You can also disable a hook for single run, e.g.
+
+       git -c hooks.npm-test.enabled=false push
 
 2. Changing verbosity
 
