@@ -43,7 +43,8 @@ then
         mode=tmp_worktree
         # TODO Handle names with spaces
         workspace_files="$( git status --short --ignored | grep '^!! ' | cut -b4- | sed 's~/$~~' )"
-        tmp_worktree="$( mktemp -d --suffix="_git-hook-npm-test" )"
+        pwd_basename="$( basename "$PWD" )"
+        tmp_worktree="$( mktemp -d --suffix="_git-hook-${pwd_basename}-npm-test" )"
         set +e
         git worktree add --detach "$tmp_worktree"
         exit_status=$?
