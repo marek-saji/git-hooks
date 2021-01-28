@@ -1,0 +1,17 @@
+#!/bin/sh
+set -eu
+
+# `act` is quite a generic name. Detect if it’s what we expect it to be
+# by matching the help text
+if act --help 2>&1 | grep -q 'Run GitHub actions locally'
+then
+    return
+fi
+
+if git diff --quiet -- ./.github/workflows
+then
+    return
+fi
+
+require_worktree
+act --dryrun --detect-event
