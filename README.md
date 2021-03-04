@@ -56,7 +56,7 @@ Configuration
        git config --type=int hooks.verbosity 2
 
    - 0: Only error messages (default)
-   - 1: Also print hook names as then run
+   - 1: Also print hook names as they run
    - 2: Also print main commands for some hooks
    - 3: Also run everything with `set -x`
 
