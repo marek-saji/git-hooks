@@ -130,7 +130,7 @@ run_hooks ()
         done
     if [ "$VERBOSITY" -gt -1 ]
     then
-        printf '✔  '
+        printf '✅ '
         echo "$success_messages" | sort -R | head -n1
     fi
 }
