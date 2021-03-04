@@ -62,17 +62,25 @@ then
 fi
 
 
-# FIXME git dir might not exist
 git_dir="$( cd "$dir" && git rev-parse --absolute-git-dir )"
-hooks_dir="$package_dir/hooks"
+if ! [ -d "$git_dir" ]
+then
+    printf "Weird, git dir does not exist: %s\n" "$git_dir"
+    exit 66
+fi
 
-# FIXME hooks dir might not exist
-cd "$git_dir/hooks"
-for name in pre-commit pre-push
-do
-    # TODO If exists and it’s not us -- print a warning
-    if ! [ -e "$name" ]
-    then
-        ln -vs "$hooks_dir/$name" "$name"
-    fi
-done
+source_hooks_dir="$package_dir/hooks"
+target_source_hooks_dir="$git_dir/hooks"
+
+mkdir -p "$target_source_hooks_dir"
+cd "$target_source_hooks_dir"
+find "$source_hooks_dir" -type f -printf '%P\n' |
+    while read -r name
+    do
+        if [ -e "./$name" ]
+        then
+            printf "%s hook already exists — skipping.\n" "$name"
+        else
+            ln -vs "$source_hooks_dir/$name" "./$name"
+        fi
+    done
