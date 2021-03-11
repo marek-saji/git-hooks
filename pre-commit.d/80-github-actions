@@ -1,5 +1,5 @@
 #!/bin/sh
-set -eu
+set -ue
 
 # `act` is quite a generic name. Detect if it’s what we expect it to be
 # by matching the help text
