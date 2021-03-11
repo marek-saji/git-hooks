@@ -77,10 +77,14 @@ cd "$target_source_hooks_dir"
 find "$source_hooks_dir" -type f -printf '%P\n' |
     while read -r name
     do
-        if [ -e "./$name" ]
+        target_hook_file="./$name"
+        if ! [ -e "$target_hook_file" ] && [ ! -h "$target_hook_file" ]
+        then
+            ln -vs "$source_hooks_dir/$name" "$target_hook_file"
+        elif ! [ -h "$target_hook_file" ]
         then
             printf "%s hook already exists — skipping.\n" "$name"
         else
-            ln -vs "$source_hooks_dir/$name" "./$name"
+            printf "WARNING %s hooks already exists (but it’s a broken symlink) — skipping.\n" "$name"
         fi
     done
