@@ -17,6 +17,7 @@ then
         set -- ':(icase)*.js' ':(icase)*.mjs' ':(icase)*.cjs' ':(icase)*.jsx' ':(icase)*.ts' ':(icase)*.tsx'
 
         # Don’t use --cached when AGAINST is a range (i.e. we are running pre-push hook)
+        # TODO Duplicated for all lint-* pre-commit hooks
         if echo "$AGAINST" | grep -q -F ".."
         then
             diff_opt=

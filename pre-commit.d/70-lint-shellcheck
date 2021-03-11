@@ -10,23 +10,35 @@ else
     shopt=
 fi
 
-if command -v shellcheck >/dev/null 2>&1
+if [ -n "$AGAINST" ]
 then
-    # TODO Run git-diff once?
-    count="$(
-        git diff --cached --diff-filter=ACMR --name-only "$AGAINST" |
-            grep -iE '^(.*/)?([^/.]+|[^/]+\.sh)$' |
-            xargs grep -El '^#!/bin/(sh|bash|dash|ksh)' |
-            wc -l
-    )"
-    if [ "$count" -gt 0 ]
+    if command -v shellcheck >/dev/null 2>&1
     then
-        secondary "Running shellcheck on %d files." "$count"
+        # Don’t use --cached when AGAINST is a range (i.e. we are running pre-push hook)
+        # TODO Duplicated for all lint-* pre-commit hooks
+        if echo "$AGAINST" | grep -q -F ".."
+        then
+            diff_opt=
+        else
+            diff_opt="--cached"
+        fi
 
-        # FIXME | sed 's~/dev/stdin/~$1~', but without loosing exit code
-        git diff --cached --diff-filter=ACMR --name-only "$AGAINST" |
-            grep -iE '^(.*/)?([^/.]+|[^/]+\.sh)$' |
-            xargs grep -El '^#!/bin/(sh|bash|dash|ksh)' |
-            xargs -n1 "$SHELL" -$-c "set -$shopt; git show :\"\$1\" | shellcheck /dev/stdin #" --
+        # TODO Run git-diff once?
+        count="$(
+            git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" |
+                grep -iE '^(.*/)?([^/.]+|[^/]+\.sh)$' |
+                xargs grep -El '^#!/bin/(sh|bash|dash|ksh)' |
+                wc -l
+        )"
+        if [ "$count" -gt 0 ]
+        then
+            secondary "Running shellcheck on %d files." "$count"
+
+            # FIXME | sed 's~/dev/stdin/~$1~', but without loosing exit code
+            git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" |
+                grep -iE '^(.*/)?([^/.]+|[^/]+\.sh)$' |
+                xargs grep -El '^#!/bin/(sh|bash|dash|ksh)' |
+                xargs -n1 "$SHELL" -$-c "set -$shopt; git show :\"\$1\" | shellcheck /dev/stdin #" --
+        fi
     fi
 fi

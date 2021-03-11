@@ -1,0 +1,6 @@
+#!/bin/sh
+set -ue
+
+export AGAINST="$RANGE"
+# shellcheck disable=SC1090
+. "$PACKAGE_DIR/pre-commit.d/70-lint-stylelint"

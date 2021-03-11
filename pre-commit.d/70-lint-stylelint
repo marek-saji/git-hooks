@@ -10,43 +10,55 @@ else
     shopt=
 fi
 
-if command -v stylelint >/dev/null && stylelint --print-config dummy.css >/dev/null 2>&1
+if [ -n "$AGAINST" ]
 then
-    # TODO Run git-diff once?
-    css_total="$(
-        git diff --cached --diff-filter=ACMR --name-only "$AGAINST" ':(icase)*.css' \
-            | wc -l
-    )"
-    scss_total="$(
-        git diff --cached --diff-filter=ACMR --name-only "$AGAINST" ':(icase)*.scss' \
-            | wc -l
-    )"
-    total=$(( css_total + scss_total ))
-
-    if [ "$total" -gt 0 ]
+    if command -v stylelint >/dev/null && stylelint --print-config dummy.css >/dev/null 2>&1
     then
-        secondary "Running stylelint on %d files." "$total"
+        # Don’t use --cached when AGAINST is a range (i.e. we are running pre-push hook)
+        # TODO Duplicated for all lint-* pre-commit hooks
+        if echo "$AGAINST" | grep -q -F ".."
+        then
+            diff_opt=
+        else
+            diff_opt="--cached"
+        fi
 
-        # TODO Run single instance for files without local changes
-        git diff --cached --diff-filter=ACMR --name-only "$AGAINST" ':(icase)*.css' |
-            nl |
-            while read -r number file
-            do
-                printf "%d/%d: " "$number" "$total" 1>&2
-                git show :"$file" | {
-                    set -"$shopt"
-                    stylelint --stdin-filename="$file"
-                }
-            done
-        git diff --cached --diff-filter=ACMR --name-only "$AGAINST" ':(icase)*.scss' |
-            nl -v$(( css_total + 1 )) |
-            while read -r number file
-            do
-                printf "%d/%d: " "$number" "$total" 1>&2
-                git show :"$file" | {
-                    set -"$shopt"
-                    stylelint --stdin-filename="$file" --syntax=scss
-                }
-            done
+        # TODO Run git-diff once?
+        css_total="$(
+            git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" ':(icase)*.css' \
+                | wc -l
+        )"
+        scss_total="$(
+            git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" ':(icase)*.scss' \
+                | wc -l
+        )"
+        total=$(( css_total + scss_total ))
+
+        if [ "$total" -gt 0 ]
+        then
+            secondary "Running stylelint on %d files." "$total"
+
+            # TODO Run single instance for files without local changes
+            git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" ':(icase)*.css' |
+                nl |
+                while read -r number file
+                do
+                    printf "%d/%d: " "$number" "$total" 1>&2
+                    git show :"$file" | {
+                        set -"$shopt"
+                        stylelint --stdin-filename="$file"
+                    }
+                done
+            git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" ':(icase)*.scss' |
+                nl -v$(( css_total + 1 )) |
+                while read -r number file
+                do
+                    printf "%d/%d: " "$number" "$total" 1>&2
+                    git show :"$file" | {
+                        set -"$shopt"
+                        stylelint --stdin-filename="$file" --syntax=scss
+                    }
+                done
+        fi
     fi
 fi
