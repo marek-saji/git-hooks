@@ -27,6 +27,6 @@
   },
   "scripts": {
     "test": "echo 'No tests yet'",
-    "postinstall": "install-git-hooks"
+    "postinstall": "./install.sh"
   }
 }
