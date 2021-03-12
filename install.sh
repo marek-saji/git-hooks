@@ -74,9 +74,10 @@ target_source_hooks_dir="$git_dir/hooks"
 
 mkdir -p "$target_source_hooks_dir"
 cd "$target_source_hooks_dir"
-find "$source_hooks_dir" -type f -printf '%P\n' |
-    while read -r name
+find "$source_hooks_dir" -type f |
+    while read -r path
     do
+        name="$( basename "$path" )"
         target_hook_file="./$name"
         if [ -e "$target_hook_file" ]
         then
