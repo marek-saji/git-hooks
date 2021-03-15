@@ -24,14 +24,14 @@ then
         fi
 
         # TODO Run git-diff once?
-        css_total="$(
+        css_total=$(
             git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" ':(icase)*.css' \
                 | wc -l
-        )"
-        scss_total="$(
+        )
+        scss_total=$(
             git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" ':(icase)*.scss' \
                 | wc -l
-        )"
+        )
         total=$(( css_total + scss_total ))
 
         if [ "$total" -gt 0 ]
