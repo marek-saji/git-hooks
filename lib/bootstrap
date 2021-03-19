@@ -20,8 +20,6 @@ else
     TPUT_WARNING=""
 fi
 
-ARGV="$( ps -o command= -q "$PPID" || ps -o command= fd "$PPID" || : )"
-export ARGV
 # TODO Set VERBOSITY from --verbose | -v | -vv | -vvv etc.
 # TODO Add a hook that checks if --fixup=… matches anything
 
