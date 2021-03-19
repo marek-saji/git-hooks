@@ -19,6 +19,8 @@ TEST ()
     mkdir "$test_dir"
     cd "$test_dir"
     git init --quiet
+    git config user.name "Tester McTestface"
+    git config user.email "tester@example.com"
     npm init --yes >/dev/null
     $install > /dev/null
     set -x
