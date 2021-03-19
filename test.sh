@@ -14,13 +14,14 @@ CLEAN ()
 
 TEST ()
 {
-    printf "\n## %s\n" "$1"
+    printf "\n## %s\n\n" "$1"
     CLEAN
     mkdir "$test_dir"
     cd "$test_dir"
     git init --quiet
     git config user.name "Tester McTestface"
     git config user.email "tester@example.com"
+    git config hooks.verbosity 5
     npm init --yes >/dev/null
     $install > /dev/null
     set -x
