@@ -21,10 +21,12 @@ TEST ()
     git init --quiet
     npm init --yes >/dev/null
     $install > /dev/null
+    set -x
 }
 
 OK ()
 {
+    set +x
     printf "✅\n"
 }
 
@@ -36,13 +38,7 @@ ALL_DONE ()
 assert_fail ()
 {
     # shellcheck disable=SC1111
-    grep -q "“$1” hook failed"
-}
-
-assert_no_fail ()
-{
-    # shellcheck disable=SC1111
-    ! grep -q "“$1” hook failed"
+    tee -a /dev/stderr | grep -q "“$1” hook failed"
 }
 
 
