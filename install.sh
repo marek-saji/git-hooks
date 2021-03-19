@@ -50,7 +50,7 @@ then
     }
 fi
 
-dir="$( echo "${1:-${INIT_CWD:-$PWD}}" | sed -E 's~.git(/hooks)?$~~' )"
+dir="$( echo "${1:-$PWD}" | sed -E 's~.git(/hooks)?$~~' )"
 package_dir="$( cd "$( dirname "$( realpath "$0" )" )" && pwd -P )"
 
 if [ "${npm_config_global:-}" = "true" ]
