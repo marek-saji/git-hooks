@@ -4,7 +4,8 @@ set -ue
 print_help ()
 {
     printf "Install git hooks in a repository.\n"
-    printf "Usage: %s [TARGET_DIR]\n" "$0"
+    printf "Usage: %s [--force] [TARGET_DIR]\n" "$0"
+    printf "Existing hooks will be skipped, unles --force is given.\n"
     printf "TARGET_DIR defaults to \$PWD.\n"
 }
 
@@ -23,6 +24,13 @@ if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]
 then
     print_help
     exit 0
+fi
+
+ARG_FORCE=
+if [ "${1:-}" = "-f" ] || [ "${1:-}" = "--force" ]
+then
+    ARG_FORCE=1
+    shift
 fi
 
 if ! command -v realpath >/dev/null
@@ -77,7 +85,10 @@ find "$source_hooks_dir" -type f |
     do
         name="$( basename "$path" )"
         target_hook_file="./$name"
-        if [ -h "$target_hook_file" ]
+        if [ -n "$ARG_FORCE" ]
+        then
+            ln -vsf "$source_hooks_dir/$name" "$target_hook_file"
+        elif [ -h "$target_hook_file" ]
         then
             symlink_target="$( readlink "$target_hook_file" )"
             if [ -e "$target_hook_file" ]
