@@ -77,12 +77,18 @@ find "$source_hooks_dir" -type f |
     do
         name="$( basename "$path" )"
         target_hook_file="./$name"
-        if [ -e "$target_hook_file" ]
+        if [ -h "$target_hook_file" ]
         then
-            printf "%s hook already exists — skipping.\n" "$name"
-        elif [ -h "$target_hook_file" ]
+            symlink_target="$( readlink "$target_hook_file" )"
+            if [ -e "$target_hook_file" ]
+            then
+                printf "INFO %s hooks already exists (symlink to %s) — skipping.\n" "$name" "$symlink_target"
+            else
+                printf "WARNING %s hooks already exists (it’s a broken symlink to %s) — skipping.\n" "$name" "$symlink_target"
+            fi
+        elif [ -e "$target_hook_file" ]
         then
-            printf "WARNING %s hooks already exists (but it’s a broken symlink) — skipping.\n" "$name"
+            printf "%s hook already exists (non-symlink file) — skipping.\n" "$name"
         else
             ln -vs "$source_hooks_dir/$name" "$target_hook_file"
         fi
