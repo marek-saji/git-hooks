@@ -13,11 +13,12 @@ get_package_name ()
 {
     dir="$1"
 
-    node -e '
-        var path = require("path");
-        var packageJson = require(process.argv[1]);
-        process.stdout.write(packageJson.name);
-    ' -- "$dir/package.json"
+    if [ -e "$dir/package.json" ] && command -v node >/dev/null
+    then
+        node -e '
+            process.stdout.write(require(process.argv[1]).name);
+        ' -- "$dir/package.json"
+    fi
 }
 
 if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]
@@ -50,8 +51,16 @@ then
     }
 fi
 
-dir="$( echo "${1:-$PWD}" | sed -E 's~.git(/hooks)?$~~' )"
 package_dir="$( cd "$( dirname "$( realpath "$0" )" )" && pwd -P )"
+git_dir="$(
+    cd "$( echo "${1:-$PWD}" | sed -E 's~.git(/hooks)?$~~' )"
+    git rev-parse --absolute-git-dir
+)"
+if ! [ -d "$git_dir" ]
+then
+    printf "Weird, git dir does not exist: %s\n" "$git_dir"
+    exit 66
+fi
 
 if [ "${npm_config_global:-}" = "true" ]
 then
@@ -61,19 +70,12 @@ fi
 
 if
     [ -n "${npm_package_name:-}" ] &&
-    [ "$npm_package_name" = "$( get_package_name "$dir" )" ]
+    [ "$npm_package_name" = "$( get_package_name "$git_dir" )" ]
 then
     # Ran `npm install` in this package and postinstall kicked in
     exit 0
 fi
 
-
-git_dir="$( cd "$dir" && git rev-parse --absolute-git-dir )"
-if ! [ -d "$git_dir" ]
-then
-    printf "Weird, git dir does not exist: %s\n" "$git_dir"
-    exit 66
-fi
 
 source_hooks_dir="$package_dir/hooks"
 target_source_hooks_dir="$git_dir/hooks"
