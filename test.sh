@@ -8,7 +8,7 @@ install="$PWD/install.sh"
 
 CLEAN ()
 {
-    cd "$test_dir/.."
+    cd "$( dirname "$test_dir" )"
     rm -rf "$test_dir"
 }
 
