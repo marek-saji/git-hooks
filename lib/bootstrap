@@ -48,7 +48,7 @@ fi
 export AGAINST
 
 XARGS_MAX_ARGS=512
-if command xargs --help | grep -q -- --no-run-if-empty
+if command xargs --help 2>&1 | grep -q -- --no-run-if-empty
 then
     # shellcheck disable=SC2139
     alias xargs="command xargs -n $XARGS_MAX_ARGS --no-run-if-empty"
