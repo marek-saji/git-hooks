@@ -117,6 +117,7 @@ run_hooks ()
 
     hook_type="$( basename "$0" .sh )"
     dir="$PACKAGE_DIR/$hook_type.d"
+    pattern="^$( git config --get --default='.*' "$GLOBAL_CONFIG_NAMESPACE.pattern" )$"
     # TODO Support global hooks in ~/.config/githooks (overwritable in git config)
     # TODO Support local hooks in ./.githooks (overwritable in git config)
     find "$dir" -maxdepth 1 -type f | sort |
@@ -128,8 +129,9 @@ run_hooks ()
                 CONFIG_NAMESPACE="$GLOBAL_CONFIG_NAMESPACE.$name"
                 enabled_shorthand_config_name="$CONFIG_NAMESPACE"
                 if
-                    is_enabled "$CONFIG_NAMESPACE.enabled" &&
-                    is_enabled "$enabled_shorthand_config_name"
+                  echo "$name" | grep -q "$pattern" &&
+                  is_enabled "$CONFIG_NAMESPACE.enabled" &&
+                  is_enabled "$enabled_shorthand_config_name"
                 then
                     if [ "$VERBOSITY" -gt 0 ]
                     then
