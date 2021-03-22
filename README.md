@@ -38,43 +38,50 @@ You may also use git submodules. Or download files, drop them in your
 Configuration
 -------------
 
-1. Disabling a hook
+### Disabling a hook
 
-       git config --type=int hooks.$HOOK_NAME.enabled false
-       # e.g. hooks.lint.enabled
+    git config --type=int hooks.$HOOK_NAME.enabled false
+    # e.g. hooks.lint.enabled
 
-   You can also disable a hook for single run, e.g.
+You can also disable a hook for single run, e.g.
 
-       git -c hooks.npm-test.enabled=false push
+    git -c hooks.npm-test.enabled=false push
 
-   As a shortcut you can omit `.enabled`:
+As a shorthand you can omit `.enabled`:
 
-       git -c hooks.npm-test=false push
+    git -c hooks.npm-test=false push
 
-2. Changing verbosity
+### Disabling all hooks
 
-       git config --type=int hooks.verbosity 2
+Apart from passing `--no-verify` you can also use `hooks.enabled`
+config option.
 
-   - 0: Only error messages (default)
-   - 1: Also print hook names as they run
-   - 2: Also print main commands for some hooks
-   - 3: Also run everything with `set -x`
+### Changing verbosity
 
-   (TODO) If not specified in config, verbosity is controlled by number
-   of `-v` parameter(s) passed to git-commit.
+    git config --type=int hooks.verbosity 2
 
-3. Temporary worktree
+- 0: Only error messages (default)
+- 1: Also print hook names as they run
+- 2: Also print main commands for some hooks
+- 3: Also run everything with `set -x`
 
-       git config --type=bool hooks.tmpWorkspace true
+(TODO) If not specified in config, verbosity is controlled by number
+of `-v` parameter(s) passed to git-commit.
 
-   Some hooks might run for a longer time (e.g. npm-test pre-push). With
-   this option enabled, they might choose to run in a temporary worktree
-   (see `git worktree --help` for details) so that your main worktree is
-   not blocked — you can switch branches, commit etc. while your tests
-   run.
+### Temporary worktree
+
+    git config --type=bool hooks.tmpWorkspace true
+
+Some hooks might run for a longer time (e.g. npm-test pre-push). With
+this option enabled, they might choose to run in a temporary worktree
+(see `git worktree --help` for details) so that your main worktree is
+not blocked — you can switch branches, commit etc. while your tests
+run.
 
 
-### pre-push: npm-test
+### Hooks
+
+#### pre-push: npm-test
 
 Detects if [jest] is being used for testing and if so, only runs tests
 that are related to modified files, but that heuristic is not perfect.
@@ -86,7 +93,7 @@ This option enables you to additionally always run selected tests, e.g.
 [jest]: https://jestjs.io/
 
 
-### pre-push: branch-name
+#### pre-push: branch-name
 
 Allows to set up a [extended grep regular expression] to match branches when pushing.
 

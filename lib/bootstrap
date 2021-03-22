@@ -99,8 +99,21 @@ secondary ()
     cprintf "$TPUT_SECONDARY" "" "$@"
 }
 
+is_enabled ()
+{
+    config_name="$1"
+    config_short_name="$2"
+    test "$( git config --get --type=bool --default=true "$config_name" )" != "false" &&
+        test "$( git config --get --type=bool --default=true "$config_short_name" )" != "false"
+}
+
 run_hooks ()
 {
+    if ! is_enabled "$GLOBAL_CONFIG_NAMESPACE.enabled" "$GLOBAL_CONFIG_NAMESPACE"
+    then
+        return
+    fi
+
     hook_type="$( basename "$0" .sh )"
     dir="$PACKAGE_DIR/$hook_type.d"
     pattern="^$( git config --get --default='.*' "$GLOBAL_CONFIG_NAMESPACE.pattern" )$"
@@ -113,12 +126,10 @@ run_hooks ()
             then
                 name="$( basename "$hook" .sh  | sed 's/^[0-9_ -]*//' )"
                 CONFIG_NAMESPACE="$GLOBAL_CONFIG_NAMESPACE.$name"
-                enabled_config_name="$CONFIG_NAMESPACE.enabled"
                 enabled_shorthand_config_name="$CONFIG_NAMESPACE"
                 if
                     echo "$name" | grep -q "$pattern" &&
-                    [ "$( git config --get --type=bool --default=true "$enabled_shorthand_config_name" )" != "false" ] &&
-                    [ "$( git config --get --type=bool --default=true "$enabled_config_name" )" != "false" ]
+                    is_enabled "$CONFIG_NAMESPACE.enabled" "$enabled_shorthand_config_name"
                 then
                     if [ "$VERBOSITY" -gt 0 ]
                     then
