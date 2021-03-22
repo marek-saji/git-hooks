@@ -29,7 +29,7 @@ TEST ()
     git commit -m 'Root' --allow-empty --quiet
     git config user.name "Tester McTestface"
     git config user.email "tester@example.com"
-    git config hooks.verbosity 1
+    git config hooks.verbosity 0
     git config hooks.pattern "$pattern"
     npm init --yes >/dev/null
 
