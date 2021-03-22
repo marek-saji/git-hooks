@@ -45,14 +45,12 @@ fi
 dir="$( echo "${1:-${INIT_CWD:-$PWD}}" | sed -E 's~.git(/hooks)?$~~' )"
 package_dir="$( cd "$( dirname "$( realpath "$0" )" )" && pwd -P )"
 
-# shellcheck disable=SC2154
 if [ "${npm_config_global:-}" = "true" ]
 then
     # Ran `npm install -g` and postinstall kicked in
     exit 0
 fi
 
-# shellcheck disable=SC2154
 if
     [ -n "${npm_package_name:-}" ] &&
     [ "$npm_package_name" = "$( get_package_name "$dir" )" ]
