@@ -105,29 +105,32 @@ run_hooks ()
     dir="$PACKAGE_DIR/$hook_type.d"
     # TODO Support global hooks in ~/.config/githooks (overwritable in git config)
     # TODO Support local hooks in ./.githooks (overwritable in git config)
-    find "$dir" -maxdepth 1 -type f -executable | sort |
+    find "$dir" -maxdepth 1 -type f | sort |
         while read -r hook
         do
-            name="$( basename "$hook" .sh  | sed 's/^[0-9_ -]*//' )"
-            CONFIG_NAMESPACE="$GLOBAL_CONFIG_NAMESPACE.$name"
-            enabled_config_name="$CONFIG_NAMESPACE.enabled"
-            enabled_shorthand_config_name="$CONFIG_NAMESPACE"
-            if
-                [ "$( git config --get --type=bool --default=true "$enabled_shorthand_config_name" )" != "false" ] &&
-                [ "$( git config --get --type=bool --default=true "$enabled_config_name" )" != "false" ]
+            if [ -x "$hook" ]
             then
-                if [ "$VERBOSITY" -gt 0 ]
+                name="$( basename "$hook" .sh  | sed 's/^[0-9_ -]*//' )"
+                CONFIG_NAMESPACE="$GLOBAL_CONFIG_NAMESPACE.$name"
+                enabled_config_name="$CONFIG_NAMESPACE.enabled"
+                enabled_shorthand_config_name="$CONFIG_NAMESPACE"
+                if
+                    [ "$( git config --get --type=bool --default=true "$enabled_shorthand_config_name" )" != "false" ] &&
+                    [ "$( git config --get --type=bool --default=true "$enabled_config_name" )" != "false" ]
                 then
-                    secondary "$name"
-                fi
+                    if [ "$VERBOSITY" -gt 0 ]
+                    then
+                        secondary "$name"
+                    fi
 
-                export GLOBAL_CONFIG_NAMESPACE CONFIG_NAMESPACE
-                # shellcheck disable=SC1090
-                if ! ( . "$hook" )
-                then
-                    error "%s “%s” hook failed" "$hook_type" "$name"
-                    secondary "To disable, run with:\n    -c %s=false " "$enabled_shorthand_config_name"
-                    false
+                    export GLOBAL_CONFIG_NAMESPACE CONFIG_NAMESPACE
+                    # shellcheck disable=SC1090
+                    if ! ( . "$hook" )
+                    then
+                        error "%s “%s” hook failed" "$hook_type" "$name"
+                        secondary "To disable, run with:\n    -c %s=false " "$enabled_shorthand_config_name"
+                        false
+                    fi
                 fi
             fi
         done
