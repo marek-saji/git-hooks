@@ -66,6 +66,9 @@ fi
 CI=true
 export CI
 
+SHELL="${SHELL:-sh}"
+export SHELL
+
 
 success_messages="All hooks seem happy.
 You are all good.
