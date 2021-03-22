@@ -53,17 +53,20 @@ then
         then
             return "$exit_status"
         fi
-        # TODO Register a trap to remove the worktree
-        cd "$tmp_worktree"
-        echo "$workspace_files" |
-            while read -r target
-            do
-                if [ -e "$OLDPWD/$target" ]
-                then
-                    mkdir -p "$( dirname "$target" )"
-                    ln -sv "$OLDPWD/$target" "$target"
-                fi
-            done
+        if [ -n "$workspace_files" ]
+        then
+            # TODO Register a trap to remove the worktree
+            cd "$tmp_worktree"
+            echo "$workspace_files" |
+                while read -r target
+                do
+                    if [ -e "$OLDPWD/$target" ]
+                    then
+                        mkdir -p "$( dirname "$target" )"
+                        ln -sv "$OLDPWD/$target" "$target"
+                    fi
+                done
+        fi
     elif git diff --quiet
     then
         mode=
