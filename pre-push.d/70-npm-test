@@ -106,7 +106,12 @@ then
     if [ "$mode" = "tmp_worktree" ]
     then
         cd - >/dev/null
-        git worktree remove -f "$tmp_worktree"
+        if git worktree 2>&1 | grep -q 'worktree remove'
+        then
+            git worktree remove -f "$tmp_worktree"
+        else
+            rm -rf "$tmp_worktree"
+        fi
     elif [ "$mode" = "stashed" ]
     then
         git stash pop
