@@ -30,7 +30,7 @@ then
             # No unstaged modifications -- running eslint on files
 
             git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" -- "$@" |
-                xargs sh -$-"${shopt}" -c "eslint --rule='import/no-unused-modules:0' \"\$@\"" --
+                xargs sh -$-"${shopt}" -c "eslint --rule='import/no-unused-modules:0' \"\$@\"" _
         else
             # Some staged modifications -- running eslint on staged diffs
 

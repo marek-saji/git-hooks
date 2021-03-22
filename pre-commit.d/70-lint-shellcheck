@@ -38,7 +38,7 @@ then
             git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" |
                 grep -iE '^(.*/)?([^/.]+|[^/]+\.sh)$' |
                 xargs grep -El '^#!/bin/(sh|bash|dash|ksh)' |
-                xargs -n1 "$SHELL" -$-c "set -$shopt; git show :\"\$1\" | shellcheck /dev/stdin #" --
+                xargs -n1 "$SHELL" -$-c "set -$shopt; git show :\"\$1\" | shellcheck /dev/stdin #" _
         fi
     fi
 fi
