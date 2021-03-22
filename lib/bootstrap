@@ -7,12 +7,17 @@ exec 1>&2
 
 GLOBAL_CONFIG_NAMESPACE="hooks"
 
-if test -t 1 && test "$( tput colors )" -gt 8 2>/dev/null
+safe_tput ()
+{
+    tput "$@" 2>/dev/null || :
+}
+
+if [ -t 1 ] && [ "$( safe_tput colors )" -gt 8 ]
 then
-    TPUT_PRIMARY="$( tput sgr0 )"
-    TPUT_SECONDARY="$( tput dim )"
-    TPUT_ERROR="$( tput setaf 1 )"
-    TPUT_WARNING="$( tput setaf 3 )"
+    TPUT_PRIMARY="$( safe_tput sgr0 )"
+    TPUT_SECONDARY="$( safe_tput dim )"
+    TPUT_ERROR="$( safe_tput setaf 1 )"
+    TPUT_WARNING="$( safe_tput setaf 3 )"
 else
     TPUT_PRIMARY=""
     TPUT_SECONDARY=""
