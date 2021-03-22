@@ -52,13 +52,19 @@ then
 fi
 
 package_dir="$( cd "$( dirname "$( realpath "$0" )" )" && pwd -P )"
+dir="${1:-${INIT_CWD:-$PWD}}"
 git_dir="$(
-    cd "$( echo "${1:-$PWD}" | sed -E 's~.git(/hooks)?$~~' )"
-    git rev-parse --absolute-git-dir
+    cd "$( echo "$dir" | sed -E 's~.git(/hooks)?$~~' )"
+    git rev-parse --absolute-git-dir || :
 )"
+if [ -z "$git_dir" ]
+then
+    printf "ERROR: No git repo found in %s\n" "$dir"
+    exit 64
+fi
 if ! [ -d "$git_dir" ]
 then
-    printf "Weird, git dir does not exist: %s\n" "$git_dir"
+    printf "ERROR: Weird, git dir does not exist: %s\n" "$git_dir"
     exit 66
 fi
 
