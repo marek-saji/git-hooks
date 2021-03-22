@@ -74,6 +74,14 @@ git commit -m A 2>&1 | assert_fail 'git-check'
 OK
 
 
+TEST "Disablig all hooks" "git-check"
+
+git config --local hooks.enabled false
+printf 'This has white space at the end of the line:    ' > foo
+commit
+OK
+
+
 CLEAN
 
 ALL_DONE
