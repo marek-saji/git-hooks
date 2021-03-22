@@ -7,6 +7,17 @@ exec 1>&2
 
 GLOBAL_CONFIG_NAMESPACE="hooks"
 
+random_line ()
+{
+    if sort --help | grep -q -- --random-sort
+    then
+        sort --random-sort | head -n1
+    else
+        # As a fallback use first line
+        head -n1
+    fi
+}
+
 safe_tput ()
 {
     tput "$@" 2>/dev/null || :
@@ -152,6 +163,6 @@ run_hooks ()
     if [ "$VERBOSITY" -gt -1 ]
     then
         printf '✅ '
-        echo "$success_messages" | sort -R | head -n1
+        echo "$success_messages" | random_line
     fi
 }
