@@ -102,7 +102,7 @@ then
 
     if [ "$mode" = "tmp_worktree" ]
     then
-        cd -
+        cd - >/dev/null
         git worktree remove -f "$tmp_worktree"
     elif [ "$mode" = "stashed" ]
     then
