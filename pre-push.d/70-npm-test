@@ -37,7 +37,7 @@ then
     # TODO This should be a globa thing
     # TODO Auto–cleanup on next run (keep a pidfile)
     workspace_enabled_config="$GLOBAL_CONFIG_NAMESPACE.tmpWorkspace"
-    workspace_enabled="$( git config --get --type=bool --default=false "$workspace_enabled_config" )"
+    workspace_enabled="$( git config --get "$workspace_enabled_config" || echo false )"
     if [ "$workspace_enabled" = "true" ]
     then
         mode=tmp_worktree

@@ -28,7 +28,7 @@ fi
 # TODO Set VERBOSITY from --verbose | -v | -vv | -vvv etc.
 # TODO Add a hook that checks if --fixup=… matches anything
 
-VERBOSITY="$( git config --get --type=int "hooks.verbosity" || echo 0 )"
+VERBOSITY="$( git config --get "hooks.verbosity" || echo 0)"
 if [ "$VERBOSITY" -gt 2 ]
 then
     set -x
@@ -105,7 +105,7 @@ secondary ()
 is_enabled ()
 {
     config_name="$1"
-    test "$( git config --get --type=bool --default=true "$config_name" )" != "false"
+    test "$( git config --get "$config_name" || echo true )" != "false"
 }
 
 run_hooks ()
@@ -117,7 +117,7 @@ run_hooks ()
 
     hook_type="$( basename "$0" .sh )"
     dir="$PACKAGE_DIR/$hook_type.d"
-    pattern="^$( git config --get --default='.*' "$GLOBAL_CONFIG_NAMESPACE.pattern" )$"
+    pattern="^$( git config --get "$GLOBAL_CONFIG_NAMESPACE.pattern" || echo '.*')$"
     # TODO Support global hooks in ~/.config/githooks (overwritable in git config)
     # TODO Support local hooks in ./.githooks (overwritable in git config)
     find "$dir" -maxdepth 1 -type f | sort |
