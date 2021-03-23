@@ -80,6 +80,9 @@ export CI
 SHELL="${SHELL:-sh}"
 export SHELL
 
+TMPDIR="${TMPDIR:-/tmp}"
+export TMPDIR
+
 
 success_messages="All hooks seem happy.
 You are all good.

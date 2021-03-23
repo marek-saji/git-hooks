@@ -64,13 +64,13 @@ ALL_DONE ()
 
 commit ()
 {
-    git add .
+    git add "$@"
     git commit --quiet -m A 2>&1
 }
 
 push ()
 {
-    git add .
+    git add "$@"
     git commit --no-verify --quiet -m A 2>&1
     git push --quiet -u origin main 2>&1
 }
@@ -85,6 +85,8 @@ set_npm_test ()
 {
     cmd="$1"
     printf '{"scripts": {"test": "%s"}}' "$cmd" > package.json
+    git add package.json
+    git commit --no-verify -m package.json
 }
 
 
@@ -106,7 +108,7 @@ OK
 TEST "pre-commit: git-check" "git-check"
 
 printf 'This has white space at the end of the line:    ' > foo
-commit | assert_fail 'git-check'
+commit foo | assert_fail 'git-check'
 OK
 
 
@@ -114,7 +116,7 @@ TEST "pre-push: npm-test" "npm-test"
 
 set_npm_test 'true'
 : > foo.js
-push
+push foo.js
 OK
 
 
@@ -123,7 +125,7 @@ TEST "pre-push: npm-test: jest" "npm-test"
 set_npm_test ": jest; sh -c 'echo \$* > ./out' --"
 cat package.json
 : > foo.js
-push
+push foo.js
 grep ' --findRelatedTests.*foo.js' ./out
 OK
 
@@ -132,8 +134,11 @@ TEST "pre-push: npm-test: worktree" "npm-test"
 
 set_npm_test 'true'
 git config --local hooks.tmpWorkspace true
+git status --porcelain > "$test_dir/status"
 : > foo.js
-push
+push foo.js
+# Check for any unexpected artifacts
+git status --porcelain | diff --report-identical-files "$test_dir/status" -
 OK
 
 
@@ -141,7 +146,7 @@ TEST "Disablig all hooks" "git-check"
 
 git config hooks.enabled false
 printf 'This has white space at the end of the line:    ' > foo
-commit
+commit foo
 OK
 
 
