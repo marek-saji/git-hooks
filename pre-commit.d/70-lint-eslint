@@ -30,7 +30,7 @@ then
             # No unstaged modifications -- running eslint on files
 
             git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" -- "$@" |
-                xargs sh -$-"${shopt}" -c "eslint --rule='import/no-unused-modules:0' \"\$@\"" --
+                xargs sh -$-"${shopt}" -c "eslint --rule='import/no-unused-modules:0' \"\$@\"" _
         else
             # Some staged modifications -- running eslint on staged diffs
 
@@ -39,10 +39,10 @@ then
             # TODO When running one–by–one run all and report all broken at the end
 
             # We are disabling import/no-unused-modules, because it increases linting time significantly
-            total="$(
+            total=$(
                 git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" -- "$@" \
                     | wc -l
-            )"
+            )
             if [ "$total" -gt 0 ]
             then
                 secondary "Running eslint on %d files." "$total"

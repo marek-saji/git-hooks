@@ -26,7 +26,7 @@
     "install-git-hooks": "./install.sh"
   },
   "scripts": {
-    "test": "echo 'No tests yet'",
+    "test": "./test.sh",
     "postinstall": "./install.sh"
   }
 }

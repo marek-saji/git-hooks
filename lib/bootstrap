@@ -7,12 +7,28 @@ exec 1>&2
 
 GLOBAL_CONFIG_NAMESPACE="hooks"
 
-if test -t 1 && test "$( tput colors )" -gt 8 2>/dev/null
+random_line ()
+{
+    if sort --help | grep -q -- --random-sort
+    then
+        sort --random-sort | head -n1
+    else
+        # As a fallback use first line
+        head -n1
+    fi
+}
+
+safe_tput ()
+{
+    tput "$@" 2>/dev/null || :
+}
+
+if [ -t 1 ] && [ "$( safe_tput colors )" -gt 8 ]
 then
-    TPUT_PRIMARY="$( tput sgr0 )"
-    TPUT_SECONDARY="$( tput dim )"
-    TPUT_ERROR="$( tput setaf 1 )"
-    TPUT_WARNING="$( tput setaf 3 )"
+    TPUT_PRIMARY="$( safe_tput sgr0 )"
+    TPUT_SECONDARY="$( safe_tput dim )"
+    TPUT_ERROR="$( safe_tput setaf 1 )"
+    TPUT_WARNING="$( safe_tput setaf 3 )"
 else
     TPUT_PRIMARY=""
     TPUT_SECONDARY=""
@@ -20,12 +36,10 @@ else
     TPUT_WARNING=""
 fi
 
-ARGV="$( ps -o command= -q "$PPID" || ps -o command= fd "$PPID" || : )"
-export ARGV
 # TODO Set VERBOSITY from --verbose | -v | -vv | -vvv etc.
 # TODO Add a hook that checks if --fixup=… matches anything
 
-VERBOSITY="$( git config --get --type=int "hooks.verbosity" || echo 0 )"
+VERBOSITY="$( git config --get "hooks.verbosity" || echo 0)"
 if [ "$VERBOSITY" -gt 2 ]
 then
     set -x
@@ -48,7 +62,7 @@ fi
 export AGAINST
 
 XARGS_MAX_ARGS=512
-if command xargs --help | grep -q -- --no-run-if-empty
+if command xargs --help 2>&1 | grep -q -- --no-run-if-empty
 then
     # shellcheck disable=SC2139
     alias xargs="command xargs -n $XARGS_MAX_ARGS --no-run-if-empty"
@@ -62,6 +76,9 @@ fi
 # Commonly used to disable interactive mode
 CI=true
 export CI
+
+SHELL="${SHELL:-sh}"
+export SHELL
 
 
 success_messages="All hooks seem happy.
@@ -96,41 +113,56 @@ secondary ()
     cprintf "$TPUT_SECONDARY" "" "$@"
 }
 
+is_enabled ()
+{
+    config_name="$1"
+    test "$( git config --get "$config_name" || echo true )" != "false"
+}
+
 run_hooks ()
 {
+    if ! is_enabled "$GLOBAL_CONFIG_NAMESPACE.enabled"
+    then
+        return
+    fi
+
     hook_type="$( basename "$0" .sh )"
     dir="$PACKAGE_DIR/$hook_type.d"
+    pattern="^$( git config --get "$GLOBAL_CONFIG_NAMESPACE.pattern" || echo '.*')$"
     # TODO Support global hooks in ~/.config/githooks (overwritable in git config)
     # TODO Support local hooks in ./.githooks (overwritable in git config)
-    find "$dir" -maxdepth 1 -type f -executable | sort |
+    find "$dir" -maxdepth 1 -type f | sort |
         while read -r hook
         do
-            name="$( basename "$hook" .sh  | sed 's/^[0-9_ -]*//' )"
-            CONFIG_NAMESPACE="$GLOBAL_CONFIG_NAMESPACE.$name"
-            enabled_config_name="$CONFIG_NAMESPACE.enabled"
-            enabled_shorthand_config_name="$CONFIG_NAMESPACE"
-            if
-                [ "$( git config --get --type=bool --default=true "$enabled_shorthand_config_name" )" != "false" ] &&
-                [ "$( git config --get --type=bool --default=true "$enabled_config_name" )" != "false" ]
+            if [ -x "$hook" ]
             then
-                if [ "$VERBOSITY" -gt 0 ]
+                name="$( basename "$hook" .sh  | sed 's/^[0-9_ -]*//' )"
+                CONFIG_NAMESPACE="$GLOBAL_CONFIG_NAMESPACE.$name"
+                enabled_shorthand_config_name="$CONFIG_NAMESPACE"
+                if
+                  echo "$name" | grep -q "$pattern" &&
+                  is_enabled "$CONFIG_NAMESPACE.enabled" &&
+                  is_enabled "$enabled_shorthand_config_name"
                 then
-                    secondary "$name"
-                fi
+                    if [ "$VERBOSITY" -gt 0 ]
+                    then
+                        secondary "$name"
+                    fi
 
-                export GLOBAL_CONFIG_NAMESPACE CONFIG_NAMESPACE
-                # shellcheck disable=SC1090
-                if ! ( . "$hook" )
-                then
-                    error "%s “%s” hook failed" "$hook_type" "$name"
-                    secondary "To disable, run with:\n    -c %s=false " "$enabled_shorthand_config_name"
-                    false
+                    export GLOBAL_CONFIG_NAMESPACE CONFIG_NAMESPACE
+                    # shellcheck disable=SC1090
+                    if ! ( . "$hook" )
+                    then
+                        error "%s “%s” hook failed" "$hook_type" "$name"
+                        secondary "To disable, run with:\n    -c %s=false " "$enabled_shorthand_config_name"
+                        false
+                    fi
                 fi
             fi
         done
     if [ "$VERBOSITY" -gt -1 ]
     then
         printf '✅ '
-        echo "$success_messages" | sort -R | head -n1
+        echo "$success_messages" | random_line
     fi
 }

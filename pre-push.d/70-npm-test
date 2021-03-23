@@ -37,14 +37,14 @@ then
     # TODO This should be a globa thing
     # TODO Auto–cleanup on next run (keep a pidfile)
     workspace_enabled_config="$GLOBAL_CONFIG_NAMESPACE.tmpWorkspace"
-    workspace_enabled="$( git config --get --type=bool --default=false "$workspace_enabled_config" )"
+    workspace_enabled="$( git config --get "$workspace_enabled_config" || echo false )"
     if [ "$workspace_enabled" = "true" ]
     then
         mode=tmp_worktree
         # TODO Handle names with spaces
         workspace_files="$( git status --short --ignored | grep '^!! ' | cut -b4- | sed 's~/$~~' )"
         pwd_basename="$( basename "$PWD" )"
-        tmp_worktree="$( mktemp -d --suffix="_git-hook-${pwd_basename}-npm-test" )"
+        tmp_worktree="$( mktemp -d "git-hook-${pwd_basename}-XXXXXXXXXX" )"
         set +e
         git worktree add --detach "$tmp_worktree"
         exit_status=$?
@@ -53,17 +53,20 @@ then
         then
             return "$exit_status"
         fi
-        # TODO Register a trap to remove the worktree
         cd "$tmp_worktree"
-        echo "$workspace_files" |
-            while read -r target
-            do
-                if [ -e "$OLDPWD/$target" ]
-                then
-                    mkdir -p "$( dirname "$target" )"
-                    ln -sv "$OLDPWD/$target" "$target"
-                fi
-            done
+        if [ -n "$workspace_files" ]
+        then
+            # TODO Register a trap to remove the worktree
+            echo "$workspace_files" |
+                while read -r target
+                do
+                    if [ -e "$OLDPWD/$target" ]
+                    then
+                        mkdir -p "$( dirname "$target" )"
+                        ln -sv "$OLDPWD/$target" "$target"
+                    fi
+                done
+        fi
     elif git diff --quiet
     then
         mode=
@@ -82,7 +85,7 @@ then
         {
             git config --get "$CONFIG_NAMESPACE.forcedFiles" || :
             git diff --name-only "$RANGE"
-        } | xargs "$SHELL" -$-"$shopt"c "npm test $npm_run_args -- --ci --color --coverage=no --passWithNoTests --findRelatedTests \"\$@\"" --
+        } | xargs "$SHELL" -$-"$shopt"c "npm test $npm_run_args -- --ci --color --coverage=no --passWithNoTests --findRelatedTests \"\$@\"" _
     else
         npm test $npm_run_args
     fi
@@ -102,8 +105,13 @@ then
 
     if [ "$mode" = "tmp_worktree" ]
     then
-        cd -
-        git worktree remove -f "$tmp_worktree"
+        cd - >/dev/null
+        if git worktree 2>&1 | grep -q 'worktree remove'
+        then
+            git worktree remove -f "$tmp_worktree"
+        else
+            rm -rf "$tmp_worktree"
+        fi
     elif [ "$mode" = "stashed" ]
     then
         git stash pop
