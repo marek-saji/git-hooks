@@ -105,10 +105,30 @@ test -x .git/hooks/pre-push
 OK
 
 
-TEST "pre-commit: git-check" "git-check"
+TEST "pre-commit: git-check passing" "git-check"
+
+printf 'This has no white space at the end of the line:' > foo
+commit foo
+OK
+
+
+TEST "pre-commit: git-check failing" "git-check"
 
 printf 'This has white space at the end of the line:    ' > foo
 commit foo | assert_fail 'git-check'
+OK
+
+
+TEST "pre-commit: non-ascii-filenames passing" "non-ascii-filenames"
+
+: > foo
+commit foo
+OK
+
+TEST "pre-commit: non-ascii-filenames failing" "non-ascii-filenames"
+
+: > 'fóó'
+commit 'fóó' | assert_fail 'non-ascii-filenames'
 OK
 
 
