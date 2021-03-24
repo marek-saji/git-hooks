@@ -9,6 +9,7 @@ package_dir="$( cd "$( dirname "$( readlink "$0" )" )"; pwd -P )"
 install="$package_dir/install.sh"
 
 test_dir="$( mktemp -d )"
+trap 'rm -rf "$test_dir"' EXIT HUP INT QUIT TERM
 test_repo_dir="$test_dir/repo"
 test_remote_dir="$test_dir/remote"
 
