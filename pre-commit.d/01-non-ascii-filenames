@@ -5,12 +5,14 @@ allownonascii="$( git config --bool hooks.allownonascii || : )"
 
 count_invalid_names ()
 {
-    # Note that the use of brackets around a tr range is ok here, (it's
-    # even required, for portability to Solaris 10's /usr/bin/tr), since
-    # the square bracket bytes happen to fall in the designated range.
-    git diff --cached --name-only --diff-filter=A -z "$AGAINST" |
-        LC_ALL=C tr -d '[ -~]\0' |
-        wc -c
+    echo $(( $(
+        # Note that the use of brackets around a tr range is ok here, (it's
+        # even required, for portability to Solaris 10's /usr/bin/tr), since
+        # the square bracket bytes happen to fall in the designated range.
+        git diff --cached --name-only --diff-filter=A -z "$AGAINST" |
+            LC_ALL=C tr -d '[ -~]\0' |
+            wc -c
+    ) ))
 }
 
 # Cross platform projects tend to avoid non-ASCII filenames; prevent

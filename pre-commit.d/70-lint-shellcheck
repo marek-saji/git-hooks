@@ -24,12 +24,12 @@ then
         fi
 
         # TODO Run git-diff once?
-        count=$(
+        count=$(( $(
             git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" |
                 grep -iE '^(.*/)?([^/.]+|[^/]+\.sh)$' |
                 xargs grep -El '^#!/bin/(sh|bash|dash|ksh)' |
                 wc -l
-        )
+        ) ))
         if [ "$count" -gt 0 ]
         then
             secondary "Running shellcheck on %d files." "$count"
