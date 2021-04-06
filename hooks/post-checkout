@@ -1,0 +1,27 @@
+#!/bin/sh
+set -ue
+
+# shellcheck disable=SC1090
+. "$( dirname "$( readlink "$0" )" )/../lib/bootstrap"
+
+PREV_REF="$1" # FIXME Is null-ref on clone and git worktree add
+NEW_REF="$2"
+
+if [ "$3" = "0" ]
+then
+    IS_FILE_CHECKOUT=1
+    IS_BRANCH_SWITCH=
+else
+    IS_FILE_CHECKOUT=
+    if [ "$PREV_REF" = "$NULL_REF" ]
+    then
+        IS_BRANCH_SWITCH=
+    else
+        IS_BRANCH_SWITCH=1
+    fi
+fi
+
+export PREV_REF NEW_REF
+export IS_FILE_CHECKOUT IS_BRANCH_SWITCH
+
+run_hooks

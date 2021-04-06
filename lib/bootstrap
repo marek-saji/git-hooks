@@ -7,6 +7,8 @@ exec 1>&2
 
 GLOBAL_CONFIG_NAMESPACE="hooks"
 
+NULL_REF=0000000000000000000000000000000000000000
+
 random_line ()
 {
     if sort --help | grep -q -- --random-sort
@@ -153,6 +155,7 @@ run_hooks ()
                     fi
 
                     export GLOBAL_CONFIG_NAMESPACE CONFIG_NAMESPACE
+                    export NULL_REF
                     # shellcheck disable=SC1090
                     if ! ( . "$hook" )
                     then
