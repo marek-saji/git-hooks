@@ -85,6 +85,19 @@ export SHELL
 TMPDIR="${TMPDIR:-/tmp}"
 export TMPDIR
 
+# Figure out how git was called
+parent_cmd="$( ps -p "$PPID" -o command= )"
+git_cmd_regex="^(\/[a-zA-Z0-9_/-]+\/)?git[[:space:]]+"
+if printf "%s" "$parent_cmd" | grep -qE "$git_cmd_regex"
+then
+    PARENT_ARGV0="$( printf "%s" "$parent_cmd" | sed -E -e "s/($git_cmd_regex).*/\\1/" )"
+    PARENT_ARGV="$( printf "%s" "$parent_cmd" | sed -E "s/$git_cmd_regex//" )"
+else
+    PARENT_ARGV0=
+    PARENT_ARGV=
+fi
+unset parent_cmd
+
 
 success_messages="All hooks seem happy.
 You are all good.
@@ -160,12 +173,18 @@ run_hooks ()
                     if ! ( . "$hook" )
                     then
                         error "%s “%s” hook failed" "$hook_type" "$name"
-                        secondary "To disable, run with:\n    -c %s=false " "$enabled_shorthand_config_name"
+                        if [ -z "$PARENT_ARGV0" ]
+                        then
+                            secondary "To temporary disable add this directly after \`git\`:\n    -c %s=false " "$enabled_shorthand_config_name"
+                        else
+                            secondary "To temporary disable run:\n    %s-c %s=false %s" "$PARENT_ARGV0" "$enabled_shorthand_config_name" "$PARENT_ARGV"
+                        fi
                         false
                     fi
                 fi
             fi
         done
+
     if [ "$VERBOSITY" -gt -1 ]
     then
         printf '✅ '
