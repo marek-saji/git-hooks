@@ -87,6 +87,9 @@ export TMPDIR
 
 # Figure out how git was called
 parent_cmd="$( ps -p "$PPID" -o command= )"
+# Can potencially lead to to some problems
+# (e.g. `./tools/git stuff/git commit`), but is good enough, especially
+# since we don’t ever run it, just use it to print example commands.
 git_cmd_regex="^(\/[a-zA-Z0-9_/-]+\/)?git[[:space:]]+"
 if printf "%s" "$parent_cmd" | grep -qE "$git_cmd_regex"
 then
