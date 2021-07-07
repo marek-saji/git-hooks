@@ -5,6 +5,9 @@ Opinionated set of git hooks.
 
 At the moment supports JavaScript, CSS, shell scripts and markdown files.
 
+[![npm package](https://img.shields.io/npm/v/@saji/git-hooks)](https://www.npmjs.com/package/@saji/git-hooks)
+[![CI status](https://github.com/marek-saji/git-hooks/actions/workflows/test.yaml/badge.svg)](https://github.com/marek-saji/git-hooks/actions/workflows/test.yaml)
+
 
 Installation
 ------------
