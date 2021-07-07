@@ -27,7 +27,8 @@ safe_tput ()
 
 time_ms ()
 {
-    echo $(( $( date +%s%N ) / 1000000 ))
+    # Sadly, macOS date(3) does not support %N
+    perl -MTime::HiRes=time -e 'printf "%d\n", time * 1000'
 }
 
 if [ -t 1 ] && [ "$( safe_tput colors )" -gt 8 ]
