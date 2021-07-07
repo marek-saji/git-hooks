@@ -120,11 +120,19 @@ commit foo | assert_fail 'git-check'
 OK
 
 
+TEST "pre-commit: git-check temporary disable command" "git-check"
+
+printf 'This has white space at the end of the line:    ' > foo
+commit foo | tee -a /dev/stderr | grep -qE '^    (.*/)?git -c hooks.git-check=false commit'
+OK
+
+
 TEST "pre-commit: non-ascii-filenames passing" "non-ascii-filenames"
 
 : > foo
 commit foo
 OK
+
 
 TEST "pre-commit: non-ascii-filenames failing" "non-ascii-filenames"
 
