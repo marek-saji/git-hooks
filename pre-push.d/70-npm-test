@@ -4,7 +4,7 @@ set -ue
 # TODO Lock switching branches while this hook is working
 # TODO On Ctrl-C ask if one wants to continue
 
-if [ "$VERBOSITY" -gt 1 ]
+if [ "$VERBOSITY" -ge 7 ]
 then
     shopt=x
     npm_run_args=

@@ -60,10 +60,12 @@ config option.
 
     git config --type=int hooks.verbosity 2
 
-- 0: Only error messages (default)
+- -1: Only error messages
+- 0: Also show celebratory success message (default)
 - 1: Also print hook names as they run
-- 2: Also print main commands for some hooks
-- 3: Also run everything with `set -x`
+- 2: Also print hook execution time after they finish.
+- 7: Also print main commands for some hooks
+- 9: Also run everything with `set -x`
 
 (TODO) If not specified in config, verbosity is controlled by number
 of `-v` parameter(s) passed to git-commit.

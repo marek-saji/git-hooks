@@ -3,7 +3,7 @@ set -ue
 
 # TODO Introduce $CONFIG_NAMESPACE.exclude
 
-if [ "$VERBOSITY" -gt 1 ]
+if [ "$VERBOSITY" -ge 7 ]
 then
     shopt=x
 else

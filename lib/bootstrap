@@ -25,6 +25,11 @@ safe_tput ()
     tput "$@" 2>/dev/null || :
 }
 
+time_ms ()
+{
+    echo $(( $( date +%s%N ) / 1000000 ))
+}
+
 if [ -t 1 ] && [ "$( safe_tput colors )" -gt 8 ]
 then
     TPUT_PRIMARY="$( safe_tput sgr0 )"
@@ -42,7 +47,7 @@ fi
 # TODO Add a hook that checks if --fixup=… matches anything
 
 VERBOSITY="$( git config --get "hooks.verbosity" || echo 0)"
-if [ "$VERBOSITY" -gt 2 ]
+if [ "$VERBOSITY" -ge 9 ]
 then
     set -x
 fi
@@ -165,10 +170,11 @@ run_hooks ()
                   is_enabled "$CONFIG_NAMESPACE.enabled" &&
                   is_enabled "$enabled_shorthand_config_name"
                 then
-                    if [ "$VERBOSITY" -gt 0 ]
+                    if [ "$VERBOSITY" -ge 1 ]
                     then
                         secondary "$name"
                     fi
+                    start_ms=$( time_ms )
 
                     export GLOBAL_CONFIG_NAMESPACE CONFIG_NAMESPACE
                     export NULL_REF
@@ -184,11 +190,21 @@ run_hooks ()
                         fi
                         false
                     fi
+
+                    end_ms=$( time_ms )
+                    if [ "$VERBOSITY" -ge 2 ]
+                    then
+                        duration_ms=$(( end_ms - start_ms ))
+                        if [ $duration_ms != 0 ]
+                        then
+                            secondary "→ took %.3fs." "${duration_ms}e-3"
+                        fi
+                    fi
                 fi
             fi
         done
 
-    if [ "$VERBOSITY" -gt -1 ]
+    if [ "$VERBOSITY" -ge 0 ]
     then
         printf '✅ '
         echo "$success_messages" | random_line

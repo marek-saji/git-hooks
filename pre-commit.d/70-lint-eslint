@@ -3,11 +3,13 @@ set -ue
 
 # TODO Introduce $CONFIG_NAMESPACE.exclude
 
-if [ "$VERBOSITY" -gt 1 ]
+if [ "$VERBOSITY" -ge 7 ]
 then
     shopt=x
+    show_progress=1
 else
     shopt=
+    show_progress=
 fi
 
 if [ -n "$AGAINST" ]
@@ -45,14 +47,20 @@ then
             ) ))
             if [ "$total" -gt 0 ]
             then
-                secondary "Running eslint on %d files." "$total"
+                if [ -n "$show_progress" ]
+                then
+                    secondary "Running eslint on %d files." "$total"
+                fi
 
                 # We are disabling import/no-unused-modules, because it increases linting time significantly
                 git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" -- "$@" |
                     nl |
                     while read -r number file
                     do
-                        printf "%d/%d: " "$number" "$total" 1>&2
+                        if [ -n "$show_progress" ]
+                        then
+                            printf "%d/%d: " "$number" "$total" 1>&2
+                        fi
                         git show :"$file" | {
                             set -"$shopt"
                             eslint --rule='import/no-unused-modules:0' --stdin --stdin-filename="$file"
