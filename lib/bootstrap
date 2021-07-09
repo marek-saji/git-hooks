@@ -91,6 +91,10 @@ export SHELL
 TMPDIR="${TMPDIR:-/tmp}"
 export TMPDIR
 
+PATH="${PATH}:./node_modules/.bin"
+export PATH
+
+
 # Figure out how git was called
 parent_cmd="$( ps -p "$PPID" -o command= )"
 # Can potencially lead to to some problems

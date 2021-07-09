@@ -47,6 +47,7 @@ TEST ()
     cd "$test_repo_dir"
     git remote add origin "file://$test_remote_dir"
     git fetch origin --quiet
+    mkdir -p node_modules/.bin/
     $install > /dev/null
 
     set -x
@@ -178,6 +179,14 @@ printf 'This has white space at the end of the line:    ' > foo
 commit foo
 OK
 
+TEST "Run commands from node_modules" "lint-eslint"
+
+printf "#!/bin/sh\necho OK > ./eslint-called" > node_modules/.bin/eslint
+chmod +x node_modules/.bin/eslint
+: > foo.js
+PATH=/bin:/usr/bin commit foo.js
+test -e ./eslint-called
+OK
 
 CLEAN
 
