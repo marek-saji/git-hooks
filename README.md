@@ -30,7 +30,8 @@ Installation
 ### by changing hooksPath
 
 1. Clone this repository anywhere
-2. Run `git config core.hooksPath YOUR_ANYWHERE/hooks`
+2. Run `git config core.hooksPath YOUR_ANYWHERE`
+   (use `git config --global` if you want to do it globally)
 
 ### via whatever
 
