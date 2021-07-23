@@ -110,3 +110,16 @@ find "$source_hooks_dir" -type f |
             ln -vs "$source_hook_file" "$target_hook_file"
         fi
     done
+
+hookspath="$( git config --get core.hookspath || : )"
+if [ -n "$hookspath" ] && [ "$hookspath" != ".git/hooks/" ]
+then
+    if ! git config --global core.hookspath >/dev/null
+    then
+        printf "core.hookspath was set to '%s', unsetting.\n" "$hookspath"
+        git config --unset core.hookspath
+    else
+        printf "core.hookspath was set to '%s', changing to '.git/hooks/'\n" "$hookspath"
+        git config core.hookspath '.git/hooks/'
+    fi
+fi
