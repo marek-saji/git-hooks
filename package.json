@@ -23,7 +23,7 @@
     "lint"
   ],
   "bin": {
-    "install-git-hooks": "./install.sh"
+    "git-install-hooks": "./install.sh"
   },
   "scripts": {
     "test": "./test.sh",
