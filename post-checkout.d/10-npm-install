@@ -1,13 +1,17 @@
 #!/bin/sh
 set -ue
 
-if [ -n "$IS_BRANCH_SWITCH" ]
+if [ -z "$IS_BRANCH_SWITCH" ]
 then
-    if [ -e ./yarn.lock ] && ! git diff --quiet "$PREV_REF..$NEW_REF" ./yarn.lock
-    then
-        yarn install
-    elif [ -e ./package-lock.json ] && ! git diff --quiet "$PREV_REF..$NEW_REF" ./package-lock.json
-    then
-        npm install
-    fi
+    return
+fi
+
+if [ -e ./yarn.lock ] && ! git diff --quiet "$PREV_REF..$NEW_REF" ./yarn.lock
+then
+    yarn install
+    "$PACKAGE_DIR/install.sh"
+elif [ -e ./package-lock.json ] && ! git diff --quiet "$PREV_REF..$NEW_REF" ./package-lock.json
+then
+    npm install
+    "$PACKAGE_DIR/install.sh"
 fi
