@@ -37,6 +37,12 @@ if
         ':(exclude,icase)./docs/' ':(exclude,icase)./documentation/' \
         ':(exclude,icase)README' ':(exclude,icase)README.md'
 then
+    test_script="$( npm run | grep -A1 '^  test$' | tail -n+2 )"
+    if [ -z "$test_script" ]
+    then
+        return
+    fi
+
     # TODO This should be a globa thing
     # TODO Auto–cleanup on next run (keep a pidfile)
     workspace_enabled_config="$GLOBAL_CONFIG_NAMESPACE.tmpWorkspace"
@@ -79,7 +85,6 @@ then
     fi
 
     start="$( date +%s )"
-    test_script="$( npm run | grep -A1 '^  test$' | tail -n+2 )"
     set +e
     if uses_jest "$test_script"
     then
