@@ -32,7 +32,7 @@ then
             # No unstaged modifications -- running eslint on files
 
             git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" -- "$@" |
-                xargs sh -$-"${shopt}" -c "eslint --rule='import/no-unused-modules:0' \"\$@\"" _
+                xargs sh -$-"${shopt}" -c "eslint --report-unused-disable-directives --rule='import/no-unused-modules:0' \"\$@\"" _
         else
             # Some staged modifications -- running eslint on staged diffs
 
@@ -63,7 +63,7 @@ then
                         fi
                         git show :"$file" | {
                             set -"$shopt"
-                            eslint --rule='import/no-unused-modules:0' --stdin --stdin-filename="$file"
+                            eslint --report-unused-disable-directives --rule='import/no-unused-modules:0' --stdin --stdin-filename="$file"
                         }
                     done
             fi
