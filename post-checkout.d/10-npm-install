@@ -8,7 +8,7 @@ fi
 
 if [ -e ./yarn.lock ] && ! git diff --quiet "$PREV_REF..$NEW_REF" ./yarn.lock
 then
-    yarn install
+    yarn install --silent
     "$PACKAGE_DIR/install.sh"
 elif [ -e ./package-lock.json ] && ! git diff --quiet "$PREV_REF..$NEW_REF" ./package-lock.json
 then
