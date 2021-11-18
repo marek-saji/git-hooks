@@ -54,7 +54,7 @@ then
 fi
 export VERBOSITY
 
-PACKAGE_DIR="$( dirname "$( readlink "$0" )" )/.."
+PACKAGE_DIR="$( dirname "$( readlink "$0" || echo "$0" )" )/.."
 export PACKAGE_DIR
 
 BASE_BRANCH="$( git config --get-regexp '^branch\..*\.remote' | head -n1 | cut -d. -f2 )"

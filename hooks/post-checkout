@@ -2,7 +2,7 @@
 set -ue
 
 # shellcheck disable=SC1090
-. "$( dirname "$( readlink "$0" )" )/../lib/bootstrap"
+. "$( dirname "$( readlink "$0" || echo "$0" )" )/../lib/bootstrap"
 
 PREV_REF="$1" # FIXME Is null-ref on clone and git worktree add
 NEW_REF="$2"

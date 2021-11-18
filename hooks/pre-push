@@ -2,7 +2,7 @@
 set -ue
 
 # shellcheck disable=SC1090
-. "$( dirname "$( readlink "$0" )" )/../lib/bootstrap"
+. "$( dirname "$( readlink "$0" || echo "$0" )" )/../lib/bootstrap"
 
 REMOTE="$1"
 URL="$2"

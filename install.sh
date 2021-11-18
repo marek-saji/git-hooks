@@ -95,7 +95,10 @@ find "$source_hooks_dir" -type f |
             ln -vsf "$source_hooks_dir/$name" "$target_hook_file"
         elif [ -h "$target_hook_file" ]
         then
-            symlink_target="$( readlink "$target_hook_file" )"
+            symlink_target="$(
+                readlink "$target_hook_file" \
+                || echo "$target_hook_file"
+            )"
             if ! [ -e "$target_hook_file" ]
             then
                 printf "WARNING %s hooks already exists (it’s a broken symlink to %s) — skipping.\n" "$name" "$symlink_target"

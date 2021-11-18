@@ -5,7 +5,7 @@ set -ue
 unset INIT_CWD
 
 # shellcheck disable=SC1090
-package_dir="$( cd "$( dirname "$( readlink "$0" )" )"; pwd -P )"
+package_dir="$( cd "$( dirname "$( readlink "$0" || echo "$0" )" )"; pwd -P )"
 install="$package_dir/install.sh"
 
 test_dir="$( mktemp -d )"
