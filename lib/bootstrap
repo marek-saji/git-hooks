@@ -168,39 +168,50 @@ run_hooks ()
                 CONFIG_NAMESPACE="$GLOBAL_CONFIG_NAMESPACE.$name"
                 enabled_shorthand_config_name="$CONFIG_NAMESPACE"
                 if
-                  echo "$name" | grep -q "$pattern" &&
-                  is_enabled "$CONFIG_NAMESPACE.enabled" &&
-                  is_enabled "$enabled_shorthand_config_name"
+                  echo "$name" | grep -q "$pattern"
                 then
                     if [ "$VERBOSITY" -ge 1 ]
                     then
                         secondary "$name"
                     fi
-                    start_ms=$( time_ms )
 
-                    export GLOBAL_CONFIG_NAMESPACE CONFIG_NAMESPACE
-                    export NULL_REF
-                    # shellcheck disable=SC1090
-                    if ! ( . "$hook" )
+                    if
+                      ! is_enabled "$CONFIG_NAMESPACE.enabled" ||
+                      ! is_enabled "$enabled_shorthand_config_name"
                     then
-                        error "%s “%s” hook failed" "$hook_type" "$name"
-                        if [ -z "$PARENT_ARGV0" ]
+                        if [ "$VERBOSITY" -ge 2 ]
                         then
-                            secondary "To temporary disable add this directly after \`git\`:\n    -c %s=false " "$enabled_shorthand_config_name"
-                        else
-                            secondary "To temporary disable run:\n    %s-c %s=false %s" "$PARENT_ARGV0" "$enabled_shorthand_config_name" "$PARENT_ARGV"
+                            secondary "→ disabled"
                         fi
-                        false
-                    fi
+                    else
 
-                    end_ms=$( time_ms )
-                    if [ "$VERBOSITY" -ge 2 ]
-                    then
-                        duration_ms=$(( end_ms - start_ms ))
-                        if [ $duration_ms != 0 ]
+                        start_ms=$( time_ms )
+
+                        export GLOBAL_CONFIG_NAMESPACE CONFIG_NAMESPACE
+                        export NULL_REF
+                        # shellcheck disable=SC1090
+                        if ! ( . "$hook" )
                         then
-                            secondary "→ took %.3fs." "${duration_ms}e-3"
+                            error "%s “%s” hook failed" "$hook_type" "$name"
+                            if [ -z "$PARENT_ARGV0" ]
+                            then
+                                secondary "To temporary disable add this directly after \`git\`:\n    -c %s=false " "$enabled_shorthand_config_name"
+                            else
+                                secondary "To temporary disable run:\n    %s-c %s=false %s" "$PARENT_ARGV0" "$enabled_shorthand_config_name" "$PARENT_ARGV"
+                            fi
+                            false
                         fi
+
+                        end_ms=$( time_ms )
+                        if [ "$VERBOSITY" -ge 2 ]
+                        then
+                            duration_ms=$(( end_ms - start_ms ))
+                            if [ $duration_ms != 0 ]
+                            then
+                                secondary "→ took %.3fs." "${duration_ms}e-3"
+                            fi
+                        fi
+
                     fi
                 fi
             fi
