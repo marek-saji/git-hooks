@@ -85,9 +85,6 @@ fi
 CI=true
 export CI
 
-SHELL="${SHELL:-sh}"
-export SHELL
-
 TMPDIR="${TMPDIR:-/tmp}"
 export TMPDIR
 
