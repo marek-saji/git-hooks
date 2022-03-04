@@ -54,6 +54,17 @@ then
 fi
 export VERBOSITY
 
+HOOK_TYPE="$( basename "$0" .sh )"
+export HOOK_TYPE
+
+if [ "$HOOK_TYPE" = "commit-msg" ]
+then
+    COMMIT_MESSAGE="${1-}"
+else
+    COMMIT_MESSAGE=""
+fi
+export COMMIT_MESSAGE
+
 PACKAGE_DIR="$( dirname "$( readlink "$0" || echo "$0" )" )/.."
 export PACKAGE_DIR
 
@@ -154,8 +165,7 @@ run_hooks ()
         return
     fi
 
-    hook_type="$( basename "$0" .sh )"
-    dir="$PACKAGE_DIR/$hook_type.d"
+    dir="$PACKAGE_DIR/$HOOK_TYPE.d"
     pattern="^$( git config --get "$GLOBAL_CONFIG_NAMESPACE.pattern" || echo '.*')$"
     # TODO Support global hooks in ~/.config/githooks (overwritable in git config)
     # TODO Support local hooks in ./.githooks (overwritable in git config)
@@ -192,7 +202,7 @@ run_hooks ()
                         # shellcheck disable=SC1090
                         if ! ( . "$hook" )
                         then
-                            error "%s “%s” hook failed" "$hook_type" "$name"
+                            error "%s “%s” hook failed" "$HOOK_TYPE" "$name"
                             if [ -z "$PARENT_ARGV0" ]
                             then
                                 secondary "To temporary disable add this directly after \`git\`:\n    -c %s=false " "$enabled_shorthand_config_name"
