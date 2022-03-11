@@ -1,0 +1,70 @@
+#!/bin/sh
+set -ue
+
+# TODO Heavily DRY–out with lint-eslint
+
+if [ "$VERBOSITY" -ge 7 ]
+then
+    shopt=x
+    show_progress=1
+else
+    shopt=
+    show_progress=
+fi
+
+if [ -n "$AGAINST" ]
+then
+    if command -v prettier >/dev/null && prettier --find-config-path . >/dev/null 2>&1
+    then
+        # Don’t use --cached when AGAINST is a range (i.e. we are running pre-push hook)
+        # TODO Duplicated for all lint-* pre-commit hooks
+        if echo "$AGAINST" | grep -q -F ".."
+        then
+            diff_opt=
+        else
+            diff_opt="--cached"
+        fi
+
+        if git diff --quiet -- "$@"
+        then
+            # No unstaged modifications -- running prettier on files
+
+            git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" |
+                xargs sh -$-"${shopt}" -c "prettier --ignore-unknown --check \"\$@\"" _
+        else
+            # Some staged modifications -- running prettier on staged diffs
+
+            # TODO Run git-diff once?
+            # FIXME Check if files exist
+            # TODO When running one–by–one run all and report all broken at the end
+
+            total=$(( $(
+                git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" -- "$@" \
+                    | wc -l
+            ) ))
+            if [ "$total" -gt 0 ]
+            then
+                if [ -n "$show_progress" ]
+                then
+                    secondary "Running prettier on %d files." "$total"
+                fi
+
+                # TODO Maybe use concurently if available?
+
+                git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" |
+                    nl |
+                    while read -r number file
+                    do
+                        if [ -n "$show_progress" ]
+                        then
+                            printf "%d/%d: " "$number" "$total" 1>&2
+                        fi
+                        git show :"$file" | {
+                            set -"$shopt"
+                            prettier --ignore-unknown --stdin-filepath="$file" --check
+                        }
+                    done
+            fi
+        fi
+    fi
+fi
