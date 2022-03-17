@@ -37,12 +37,19 @@ then
     TPUT_SECONDARY="$( safe_tput dim )"
     TPUT_ERROR="$( safe_tput setaf 1 )"
     TPUT_WARNING="$( safe_tput setaf 3 )"
+    TPUT_VERY_HIGH_VALUE="$TPUT_ERROR"
+    TPUT_HIGH_VALUE="$TPUT_WARNING"
 else
     TPUT_PRIMARY=""
     TPUT_SECONDARY=""
     TPUT_ERROR=""
     TPUT_WARNING=""
+    TPUT_VERY_HIGH_VALUE=
+    TPUT_HIGH_VALUE=
 fi
+
+MS_HIGH=1500
+MS_VERY_HIGH=3000
 
 # TODO Set VERBOSITY from --verbose | -v | -vv | -vvv etc.
 # TODO Add a hook that checks if --fixup=… matches anything
@@ -218,7 +225,16 @@ run_hooks ()
                             duration_ms=$(( end_ms - start_ms ))
                             if [ $duration_ms != 0 ]
                             then
-                                secondary "→ took %.3fs." "${duration_ms}e-3"
+                                if [ "$duration_ms" -gt "$MS_VERY_HIGH" ]
+                                then
+                                    duration_color="$TPUT_VERY_HIGH_VALUE"
+                                elif [ "$duration_ms" -gt "$MS_HIGH" ]
+                                then
+                                    duration_color="$TPUT_HIGH_VALUE"
+                                else
+                                    duration_color=
+                                fi
+                                printf "${TPUT_SECONDARY}→ took ${duration_color}%.3fs${TPUT_PRIMARY}${TPUT_SECONDARY}.${TPUT_PRIMARY}\n" "${duration_ms}e-3"
                             fi
                         fi
 
