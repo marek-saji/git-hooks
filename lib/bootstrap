@@ -31,6 +31,23 @@ time_ms ()
     perl -MTime::HiRes=time -e 'printf "%d\n", time * 1000'
 }
 
+needs_quotes ()
+{
+    ! echo "$1" | grep -Eq '^[a-zA-Z.,:_/=@-]+$'
+}
+
+quote_if_needed ()
+{
+    arg="$1"
+    if needs_quotes "$arg"
+    then
+        # FIXME This will fail if you have quotes inside your args
+        printf '"%s"' "$arg"
+    else
+        printf '%s' "$arg"
+    fi
+}
+
 if [ -t 1 ] && [ "$( safe_tput colors )" -gt 8 ]
 then
     TPUT_PRIMARY="$( safe_tput sgr0 )"
@@ -116,10 +133,21 @@ if [ -e "/proc/$PPID/cmdline" ]
 then
     # On systems with procfs get command from there since it contains
     # words separated by null bytes, so we can restore quoting
-    PARENT_ARGV0="\"$( cut -d '' -f1 "/proc/$PPID/cmdline" )\""
-    if echo "$PARENT_ARGV0" | grep -Eq "^\"${git_cmd_regex}\"$"
+    PARENT_ARGV0="$( cut -d '' -f1 "/proc/$PPID/cmdline" )"
+    if [ -n "$PARENT_ARGV0" ]
     then
-        PARENT_ARGV="\"$( cut -d '' -f2- "/proc/$PPID/cmdline" | sed -e 's/\x0*$//' -e 's/\x0/" "/g' )\""
+        PARENT_ARGV0="$( quote_if_needed "$PARENT_ARGV0" )"
+
+        PARENT_ARGV="$(
+            cut -d '' -f2- "/proc/$PPID/cmdline" |
+                sed 's/\x0*$//' |
+                tr '\0' '\n' |
+                while read -r arg
+                do
+                    printf ' '
+                    quote_if_needed "$arg"
+                done
+        )"
     else
         PARENT_ARGV0=
         PARENT_ARGV=
@@ -131,7 +159,7 @@ else
     if printf "%s" "$parent_cmd" | grep -qE "^${git_cmd_regex}[[:space:]]+"
     then
         PARENT_ARGV0="$( printf "%s" "$parent_cmd" | sed -E -e "s/^($git_cmd_regex).*/\\1/" )"
-        PARENT_ARGV="$( printf "%s" "$parent_cmd" | sed -E "s/^${git_cmd_regex}[[:space:]]+//" )"
+        PARENT_ARGV=" $( printf "%s" "$parent_cmd" | sed -E "s/^${git_cmd_regex}[[:space:]]+//" )"
     else
         PARENT_ARGV0=
         PARENT_ARGV=
@@ -228,7 +256,7 @@ run_hooks ()
                             then
                                 secondary "To temporary disable add this directly after \`git\`:\n    -c %s=false " "$enabled_shorthand_config_name"
                             else
-                                secondary "To temporary disable run:\n    %s -c %s=false %s" "$PARENT_ARGV0" "$enabled_shorthand_config_name" "$PARENT_ARGV"
+                                secondary "To temporary disable run:\n    %s -c %s=false%s" "$PARENT_ARGV0" "$enabled_shorthand_config_name" "$PARENT_ARGV"
                             fi
                             false
                         fi
