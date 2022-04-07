@@ -1,0 +1,49 @@
+#!/bin/sh
+set -ue
+
+if [ "$VERBOSITY" -ge 7 ]
+then
+    shopt=x
+    show_progress=1
+else
+    shopt=
+    show_progress=
+fi
+
+if [ -n "$AGAINST" ]
+then
+    if command -v circleci >/dev/null 2>&1
+    then
+        set -- '.circleci/config*.yml' '.circleci/config*.yaml'
+
+        # Don’t use --cached when AGAINST is a range (i.e. we are running pre-push hook)
+        # TODO Duplicated for all lint-* pre-commit hooks
+        if echo "$AGAINST" | grep -q -F ".."
+        then
+            diff_opt=
+        else
+            diff_opt="--cached"
+        fi
+
+        total=$(( $(
+            git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" -- "$@" \
+                | wc -l
+        ) ))
+        if [ "$total" -gt 0 ]
+        then
+            git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" -- "$@" |
+                nl |
+                while read -r number file
+                do
+                    if [ -n "$show_progress" ] && [ "$total" != "1" ]
+                    then
+                        printf "%d/%d: " "$number" "$total" 1>&2
+                    fi
+                    git show ":$file" | {
+                        set -"$shopt"
+                        circleci config validate --skip-update-check -
+                    }
+                done
+        fi
+    fi
+fi
