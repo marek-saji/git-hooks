@@ -305,7 +305,6 @@ run_hooks ()
                             secondary "→ disabled"
                         fi
                     else
-
                         start_ms=$( time_ms )
 
                         export GLOBAL_CONFIG_NAMESPACE CONFIG_NAMESPACE
