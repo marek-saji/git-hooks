@@ -16,10 +16,10 @@ fi
 
 if [ -e ./yarn.lock ] && ! git diff --quiet "$PREV_REF..$NEW_REF" ./yarn.lock
 then
-    yarn install --silent
+    yarn install --silent --pure-lockfile
     "$PACKAGE_DIR/install.sh"
 elif [ -e ./package-lock.json ] && ! git diff --quiet "$PREV_REF..$NEW_REF" ./package-lock.json
 then
-    npm install
+    npm install --save=false
     "$PACKAGE_DIR/install.sh"
 fi
