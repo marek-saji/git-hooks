@@ -49,16 +49,33 @@ then
                         stylelint --stdin-filename="$file"
                     }
                 done
-            git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" ':(icase)*.scss' |
-                nl -v$(( css_total + 1 )) |
-                while read -r number file
-                do
-                    printf "%d/%d: " "$number" "$total" 1>&2
-                    git show :"$file" | {
-                        set -"$shopt"
-                        stylelint --stdin-filename="$file" --syntax=scss
-                    }
-                done
+
+            if [ "$scss_total" -gt 0 ]
+            then
+                if stylelint --help | grep -q -- --syntax
+                then
+                    # Legacy
+                    scss_arg="echo --syntax=scss"
+                else
+                    postcss_plugin="$( npm ls --depth=0 --parseable postcss-scss )"
+                    if [ -z "$postcss_plugin" ]
+                    then
+                        warning 2>&1 'Install postcss-scss npm package to lint SCSS files.'
+                    fi
+                    scss_arg="--custom-syntax='$postcss_plugin'"
+                fi
+
+                git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" ':(icase)*.scss' |
+                    nl -v$(( css_total + 1 )) |
+                    while read -r number file
+                    do
+                        printf "%d/%d: " "$number" "$total" 1>&2
+                        git show :"$file" | {
+                            set -"$shopt"
+                            stylelint --stdin-filename="$file" "$scss_arg"
+                        }
+                    done
+            fi
         fi
     fi
 fi
