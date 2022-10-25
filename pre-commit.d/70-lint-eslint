@@ -28,12 +28,19 @@ then
             diff_opt="--cached"
         fi
 
+        color_opt="$(
+            if [ -n "$FORCE_COLORS" ]
+            then
+                echo --color
+            fi
+        )"
+
         if git diff --quiet -- "$@"
         then
             # No unstaged modifications -- running eslint on files
 
             git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" -- "$@" |
-                xargs sh -$-"${shopt}" -c "eslint --report-unused-disable-directives --rule='import/no-unused-modules:0' \"\$@\"" _
+                xargs sh -$-"${shopt}" -c "eslint $color_opt --report-unused-disable-directives --rule='import/no-unused-modules:0' \"\$@\"" _
         else
             # Some staged modifications -- running eslint on staged diffs
 
@@ -66,7 +73,7 @@ then
                         fi
                         git show :"$file" | {
                             set -"$shopt"
-                            eslint --report-unused-disable-directives --rule='import/no-unused-modules:0' --stdin --stdin-filename="$file"
+                            eslint "$color_opt" --report-unused-disable-directives --rule='import/no-unused-modules:0' --stdin --stdin-filename="$file"
                         }
                     done
             fi
