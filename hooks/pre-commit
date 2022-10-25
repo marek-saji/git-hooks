@@ -1,7 +1,13 @@
 #!/bin/sh
 set -ue
 
-# shellcheck disable=SC1090
+# shellcheck disable=SC1091
 . "$( dirname "$( readlink "$0" || echo "$0" )" )/../lib/bootstrap"
+
+# Bail early if there are no changes
+if git diff --quiet --cached "$AGAINST"
+then
+  exit 0
+fi
 
 run_hooks
