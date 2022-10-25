@@ -38,7 +38,7 @@ time_ms ()
 
 needs_quotes ()
 {
-    ! echo "$1" | grep -Eq '^[a-zA-Z.,:_/=@-]+$'
+    ! echo "$1" | grep -Eq '^[a-zA-Z0-9.,:_/=@-]+$'
 }
 
 quote_if_needed ()
