@@ -25,6 +25,11 @@ safe_tput ()
     tput "$@" 2>/dev/null || :
 }
 
+test_nt ()
+{
+    test -n "$( find -L "$1" -prune -newer "$2" )"
+}
+
 time_ms ()
 {
     # Sadly, macOS date(3) does not support %N
@@ -126,6 +131,9 @@ export TMPDIR
 PATH="${PATH}:./node_modules/.bin"
 export PATH
 
+NODE_MODULES_CHECKED=
+export NODE_MODULES_CHECKED
+
 
 # Figure out how git was called
 git_cmd_regex="(\/[a-zA-Z0-9_/-]+\/)?git"
@@ -199,6 +207,34 @@ warning ()
 secondary ()
 {
     cprintf "$TPUT_SECONDARY" "" "$@"
+}
+
+require_node_modules ()
+{
+    if [ -n "$NODE_MODULES_CHECKED" ]
+    then
+        return
+    fi
+    NODE_MODULES_CHECKED=1
+
+    lock_file=
+    npm_bin=
+    if [ -e "package-lock.json" ]
+    then
+        lock_file=package-lock.json
+        npm_bin=npm
+    elif [ -e "yarn.lock" ]
+    then
+        lock_file=yarn.lock
+        npm_bin=yarn
+    fi
+
+    if
+        [ -n "$lock_file" ] &&
+        test_nt "$lock_file" "node_modules"
+    then
+        "$npm_bin" install
+    fi
 }
 
 is_enabled ()

@@ -86,6 +86,9 @@ then
 
     start="$( date +%s )"
     set +e
+
+    require_node_modules
+
     if uses_jest "$test_script"
     then
         # TODO Use --changedSince if forcedFiles is not set
