@@ -130,19 +130,18 @@ export CI
 # https://nodejs.org/api/cli.html#force_color1-2-3
 if [ -z "${FORCE_COLORS-}" ]
 then
-    color_count="$( tput colors || : )"
-    if [ "$color_count" -lt 16 ]
-    then
-        FORCE_COLORS=
-    elif [ "$color_count" = 16 ]
+    color_count="$( safe_tput colors )"
+    if [ "$color_count" = 16 ]
     then
         FORCE_COLORS=1
     elif [ "$color_count" = 256 ]
     then
         FORCE_COLORS=2
-    elif [ "$color_count" -gt 256 ]
+    elif [ "${color_count:-0}" -gt 256 ]
     then
         FORCE_COLORS=3
+    else
+        FORCE_COLORS=
     fi
 fi
 export FORCE_COLORS
