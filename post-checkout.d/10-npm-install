@@ -6,6 +6,9 @@ then
     return
 fi
 
+# FIXME Don’t run during rebase
+# TODO Also post-rebase and post-merge
+
 if [ -e ./yarn.lock ] && ! git diff --quiet "$PREV_REF..$NEW_REF" ./yarn.lock
 then
     yarn install --silent

@@ -1,6 +1,7 @@
 #!/bin/sh
 set -ue
 
+# FIXME --report-unused-disable-directives and --rule='import/no-unused-modules:0' conflict with each other
 # TODO Introduce $CONFIG_NAMESPACE.exclude
 
 if [ "$VERBOSITY" -ge 7 ]
@@ -51,6 +52,8 @@ then
                 then
                     secondary "Running eslint on %d files." "$total"
                 fi
+
+                # TODO Maybe use concurently if available?
 
                 # We are disabling import/no-unused-modules, because it increases linting time significantly
                 git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" -- "$@" |

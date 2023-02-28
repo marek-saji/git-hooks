@@ -100,6 +100,7 @@ export PACKAGE_DIR
 BASE_BRANCH="$( git config --get-regexp '^branch\..*\.remote' | head -n1 | cut -d. -f2 )"
 export BASE_BRANCH
 
+# TODO Does this work for all hooks? What about post-checkout, post-rebase etc?
 if git rev-parse --verify HEAD >/dev/null 2>&1
 then
     AGAINST=HEAD
@@ -257,6 +258,10 @@ run_hooks ()
     find "$dir" -maxdepth 1 -type f | sort |
         while read -r hook
         do
+            # TODO Use git-notes to store hooks ran for given commit and not re–run it
+            #      This way we can have linting in both commit and push and it  will run only for commit (unless it’s skipped there)
+            #      Probably use core.notesRef=refs/notes/hooks and `- [x] hook name`
+
             if [ -x "$hook" ]
             then
                 name="$( basename "$hook" .sh  | sed 's/^[0-9_ -]*//' )"
@@ -288,6 +293,7 @@ run_hooks ()
                         if ! ( . "$hook" )
                         then
                             error "%s “%s” hook failed" "$HOOK_TYPE" "$name"
+                            # TODO Hmm… maybe also skip checks that already passed?
                             if [ -z "$PARENT_ARGV0" ]
                             then
                                 secondary "To temporary disable add this directly after \`git\`:\n    -c %s=false " "$enabled_shorthand_config_name"

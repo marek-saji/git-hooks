@@ -91,6 +91,7 @@ then
 
     if uses_jest "$test_script"
     then
+        # TODO Search for initStoryshots and always run that
         # TODO Use --changedSince if forcedFiles is not set
         # TODO If list is too long, fall–back to running all tests
         {

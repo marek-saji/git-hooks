@@ -1,6 +1,8 @@
 #!/bin/sh
 set -ue
 
+# TODO Skip for Merge commits
+
 if [ -n "$RANGE" ]
 then
     regex='\<(WIP|TODO)\>'

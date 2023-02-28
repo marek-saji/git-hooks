@@ -1,6 +1,9 @@
 #!/bin/sh
 set -ue
 
+# TODO Skip for '^(Merge|Revert|fixup!|squash!) '
+# TODO Only follow first parent? (skip merges)
+
 if [ -n "$RANGE" ]
 then
     commit="$(
