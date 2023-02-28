@@ -150,7 +150,7 @@ export FORCE_COLORS
 TMPDIR="${TMPDIR:-/tmp}"
 export TMPDIR
 
-PATH="${PATH}:./node_modules/.bin"
+PATH="./node_modules/.bin:${PATH}"
 export PATH
 
 NODE_MODULES_CHECKED=
