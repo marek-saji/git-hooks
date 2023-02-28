@@ -13,4 +13,5 @@ then
     return
 fi
 
+require_worktree
 act --dryrun --detect-event

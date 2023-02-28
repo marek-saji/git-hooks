@@ -230,6 +230,67 @@ secondary ()
     cprintf "$TPUT_SECONDARY" "" "$@"
 }
 
+require_worktree ()
+{
+    warning 'require_worktree not implemented yet'
+    return 0
+
+    # TODO Don’t if already done for this run
+
+    # TODO cleanup previous (not here)
+
+    # TODO By default keep disabled until first long running
+    workspace_enabled_config="$GLOBAL_CONFIG_NAMESPACE.tmpWorktree" # TODO Update readme (renamed)
+    workspace_enabled="$( git config --get --type=bool --default=true "$workspace_enabled_config" )"
+    if [ "$workspace_enabled" = "false" ]
+    then
+        if git diff --quiet
+        then
+            git stash --keep-index --message="Stashed for running git hooks"
+            # TODO Communicate upstream that it was stashed, so that destroy_worktree can pop
+        fi
+        return
+    fi
+
+    workspace_files="$( git status --short --ignored | grep '^!! ' | cut -b4- | sed 's~/$~~' )"
+
+    pwd_basename="$( basename "$PWD" )"
+    tmp_worktree="$( mktemp -d --suffix="_git-hook-${pwd_basename}" )"
+
+    git worktree add --detach "$tmp_worktree"
+    # TODO Communicate upstream that worktree was added
+
+    trap destroy_worktree EXIT INT HUP TERM
+
+    cd "$tmp_worktree"
+
+    echo "$workspace_files" |
+        while read -r target
+        do
+            if [ -e "$OLDPWD/$target" ]
+            then
+                mkdir -p "$( dirname "$target" )"
+                ln -sv "$OLDPWD/$target" "$target"
+            fi
+        done
+
+    # TODO run npm install
+}
+
+destroy_worktree ()
+{
+    return # FIXME
+
+    if has_added_worktree # TODO
+    then
+        cd -
+        git worktree remove -f "$tmp_worktree"
+    elif has_stashed # TODO
+    then
+        git stash pop
+    fi
+}
+
 require_node_modules ()
 {
     if [ -n "$NODE_MODULES_CHECKED" ]
@@ -345,6 +406,8 @@ run_hooks ()
                 fi
             fi
         done
+
+    destroy_worktree
 
     if [ "$VERBOSITY" -ge 0 ]
     then
