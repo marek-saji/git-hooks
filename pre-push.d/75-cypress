@@ -1,0 +1,41 @@
+#!/bin/sh
+set -ue
+
+# TODO On Ctrl-C ask if one wants to continue
+
+cypress_config_file='./cypress.json'
+
+if
+    [ -n "$RANGE" ] &&
+    [ -e "$cypress_config_file" ] &&
+    [ -x "./node_modules/.bin/cypress" ] &&
+    command -v npx >/dev/null 2>&1 &&
+    command -v jq >/dev/null 2>&1 &&
+    ! git diff --quiet "$RANGE" -- \
+        ':(exclude,icase)./docs/' ':(exclude,icase)./documentation/' \
+        ':(exclude,icase)README' ':(exclude,icase)README.md'
+then
+    require_worktree
+
+    base_url="$( jq -r .baseUrl "$cypress_config_file" 2>/dev/null || : )"
+    if [ -n "$base_url" ]
+    then
+        if git diff --quiet -- "$@"
+        then
+            if ! npx --quiet wait-on --timeout=1000 "$base_url" >/dev/null 2>&1
+            then
+                warning "Cypress is set up, but it’s configured base url is not up: ${base_url}"
+            else
+                if npm run | grep -q '^  run-cypress$'
+                then
+                    npm run run-cypress
+                else
+                    ./node_modules/.bin/cypress run
+                fi
+            fi
+        else
+            # Some staged modifications -- running on staged diffs
+            warning "Running cypress tests does not work with dirty worktree." # FIXME
+        fi
+    fi
+fi
