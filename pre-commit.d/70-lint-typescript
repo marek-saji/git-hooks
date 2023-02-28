@@ -1,0 +1,36 @@
+#!/bin/sh
+set -ue
+
+# TODO Introduce $CONFIG_NAMESPACE.exclude
+
+if
+    [ -n "$AGAINST" ] &&
+    [ -r tsconfig.json ] &&
+    command -v tsc >/dev/null &&
+    # Only run check if TS was configured not to emit JS files
+    tsc --showConfig | grep -qE '^\s*"noEmit": true,?$'
+then
+    set -- ':(icase)*.js' ':(icase)*.mjs' ':(icase)*.cjs' ':(icase)*.jsx' ':(icase)*.ts' ':(icase)*.tsx'
+
+    # Don’t use --cached when AGAINST is a range (i.e. we are running pre-push hook)
+    # TODO Duplicated for all lint-* pre-commit hooks
+    if echo "$AGAINST" | grep -q -F ".."
+    then
+        diff_opt=
+    else
+        diff_opt="--cached"
+    fi
+
+    if ! git diff $diff_opt --quiet "$AGAINST" -- "$@"
+    then
+        # FIXME Once require_worktree is implemented, we can drop this
+        if git diff --quiet -- "$@"
+        then
+            # No unstaged modifications -- running on files
+            tsc
+        else
+            # Some staged modifications -- running on staged diffs
+            warning "TypeScript linting with dirty worktree not supported." # FIXME
+        fi
+    fi
+fi
