@@ -84,6 +84,15 @@ then
         git stash --keep-index --message="Stashed for running tests"
     fi
 
+    # When running `node --test` if TTY is missing it switches reporter
+    # from spec to tap. We don’t want that. Node support passing
+    # --test-reporter in NODE_OPTIONS only since v20
+    # (https://github.com/nodejs/node/pull/46688)
+    if [ "$( { echo "v20"; node --version; } | sort -V )" = "v20" ]
+    then
+        export NODE_OPTIONS="$NODE_OPTIONS --test-reporter=spec"
+    fi
+
     start="$( date +%s )"
     set +e
 
