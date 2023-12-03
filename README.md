@@ -15,12 +15,12 @@ Installation
 ### via npm dependency (recommended)
 
 1. `npm install --save-dev @saji/git-hooks`
-2. Add `install-git-hooks` to your `postinstall` script
+2. Add `git-install-hooks` to your `postinstall` script
 
 ### from global npm install
 
 1. `npm install -g @saji/git-hooks`
-2. Run `install-git-hooks PATH_TO_YOUR_PROJECT`
+2. Run `git-install-hooks PATH_TO_YOUR_PROJECT`
 
 ### from cloned repository
 
