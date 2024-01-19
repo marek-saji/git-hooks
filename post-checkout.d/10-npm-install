@@ -16,7 +16,13 @@ fi
 
 if [ -e ./yarn.lock ] && ! git diff --quiet "$PREV_REF..$NEW_REF" ./yarn.lock
 then
-    yarn install --silent --pure-lockfile
+    YARN_VERSION="$( yarn --version | cut -d. -f1 )"
+    if [ "$YARN_VERSION" -lt 2 ]
+    then
+        yarn install --silent --pure-lockfile
+    else
+        yarn install --silent --immutable
+    fi
     "$PACKAGE_DIR/install.sh"
 elif [ -e ./package-lock.json ] && ! git diff --quiet "$PREV_REF..$NEW_REF" ./package-lock.json
 then
