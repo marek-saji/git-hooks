@@ -38,7 +38,7 @@ time_ms ()
 
 needs_quotes ()
 {
-    ! echo "$1" | grep -Eq '^[a-zA-Z0-9.,:_/=@-]+$'
+    ! echo "$1" | grep -Eq '^[a-zA-Z0-9.,:_/=@'"'"'"!-]+$'
 }
 
 quote_if_needed ()
@@ -46,8 +46,8 @@ quote_if_needed ()
     arg="$1"
     if needs_quotes "$arg"
     then
-        # FIXME This will fail if you have quotes inside your args
-        printf '"%s"' "$arg"
+        # FIXME This will fail if you have single quotes inside your args
+        printf "'%s'" "$arg"
     else
         printf '%s' "$arg"
     fi
