@@ -14,7 +14,7 @@ fi
 
 if [ -n "$AGAINST" ]
 then
-    if command -v prettier >/dev/null && prettier --find-config-path . >/dev/null 2>&1
+    if command -v prettier >/dev/null && prettier --find-config-path dummy.js >/dev/null 2>&1
     then
         # Don’t use --cached when AGAINST is a range (i.e. we are running pre-push hook)
         # TODO Duplicated for all lint-* pre-commit hooks
