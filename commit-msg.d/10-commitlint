@@ -4,9 +4,9 @@ set -ue
 if
     # This grep will match if there is a "commitlint" config in
     # package.json, but also if package is listed as a dependency, but
-    # that’s a find false–positive
+    # that’s a fine false–positive
     grep -q '"commitlint"' package.json ||
     find . -maxdepth 1 -name '*commitlint*' | grep -qE '^\./\.?commitlintrc(\.config)?(\.(json|c?js|ts|ya?ml|))?'
 then
-    echo "$COMMIT_MESSAGE" | commitlint
+    commitlint --color --edit
 fi
