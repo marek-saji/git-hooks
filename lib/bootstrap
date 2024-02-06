@@ -128,23 +128,23 @@ export CI
 
 # Signal that we want colour even if we don’t have TTY
 # https://nodejs.org/api/cli.html#force_color1-2-3
-if [ -z "${FORCE_COLORS-}" ]
+if [ -z "${FORCE_COLOR-}" ]
 then
     color_count="$( safe_tput colors )"
     if [ "$color_count" = 16 ]
     then
-        FORCE_COLORS=1
+        FORCE_COLOR=1
     elif [ "$color_count" = 256 ]
     then
-        FORCE_COLORS=2
+        FORCE_COLOR=2
     elif [ "${color_count:-0}" -gt 256 ]
     then
-        FORCE_COLORS=3
+        FORCE_COLOR=3
     else
-        FORCE_COLORS=
+        FORCE_COLOR=
     fi
 fi
-export FORCE_COLORS
+export FORCE_COLOR
 
 TMPDIR="${TMPDIR:-/tmp}"
 export TMPDIR

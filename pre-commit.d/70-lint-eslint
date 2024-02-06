@@ -29,7 +29,7 @@ then
         fi
 
         color_opt="$(
-            if [ -n "$FORCE_COLORS" ]
+            if [ -n "${FORCE_COLOR-}" ]
             then
                 echo --color
             fi
