@@ -15,7 +15,14 @@ then
     return
 fi
 
+# Allow common branch names
 if echo "$remote_branch" | grep -qE '^(master|main|development|staging|production)$'
+then
+    return
+fi
+
+# Allow branch names created by tools
+if echo "$remote_branch" | grep -qE '(^dependabot/)'
 then
     return
 fi
