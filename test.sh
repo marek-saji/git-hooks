@@ -8,8 +8,15 @@ unset INIT_CWD
 package_dir="$( cd "$( dirname "$( readlink "$0" || echo "$0" )" )"; pwd -P )"
 install="$package_dir/install.sh"
 
-test_dir="$( mktemp -d )"
-trap 'rm -rf "$test_dir"' EXIT HUP INT QUIT TERM
+if [ -n "${DEBUG-}" ]
+then
+    test_dir="$PWD/test-env"
+    rm -rf "$test_dir"
+    mkdir -p "$test_dir"
+else
+    test_dir="$( mktemp -d )"
+    trap 'rm -rf "$test_dir"' EXIT HUP INT QUIT TERM
+fi
 test_repo_dir="$test_dir/repo"
 test_remote_dir="$test_dir/remote"
 
