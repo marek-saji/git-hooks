@@ -94,6 +94,14 @@ else
 fi
 export COMMIT_MESSAGE
 
+if [ -d ".git/rebase-apply" ] || [ -d ".git/rebase-merge" ]
+then
+    REBASE_IN_PROGRESS=1
+else
+    REBASE_IN_PROGRESS=
+fi
+export REBASE_IN_PROGRESS
+
 PACKAGE_DIR="$( dirname "$( readlink "$0" || echo "$0" )" )/.."
 export PACKAGE_DIR
 
@@ -269,6 +277,13 @@ run_hooks ()
     if ! is_enabled "$GLOBAL_CONFIG_NAMESPACE.enabled"
     then
         return
+    fi
+
+    # During rebase, hooks hooks are being run with “Rebasing (X/Y)” on
+    # printed and cursor at the beginning of the line
+    if [ -n "$REBASE_IN_PROGRESS" ] && [ "$VERBOSITY" -ge 0 ]
+    then
+        printf '\n'
     fi
 
     dir="$PACKAGE_DIR/$HOOK_TYPE.d"
