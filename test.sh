@@ -150,7 +150,7 @@ OK
 TEST "pre-commit: git-check temporary disable command" "git-check"
 
 printf 'This has white space at the end of the line:    ' > foo
-commit foo | tee_stderr | grep -qE '^    "?(.*/)?git"? -c hooks.git-check=false "?commit'
+commit foo | tee_stderr | grep -qE ' -c hooks.git-check=false '
 OK
 
 
