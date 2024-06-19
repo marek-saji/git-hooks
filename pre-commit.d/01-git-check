@@ -5,7 +5,30 @@ set -ue
 #      and remove hardcoded excludes from here.
 #      Or maybe split it into two hooks each with separate config
 
+output="$( mktemp )"
+trap 'rm -rf "$output"' EXIT HUP INT QUIT TERM
+
 # Check for whitespace errors and conflict markers
-git diff-index --check --cached "$AGAINST" -- ':(icase,exclude)*.patch' ':(icase,exclude)*/__snapshots__/*'
+git \
+    diff-index --check --cached "$AGAINST" \
+    -- \
+    ':(icase,exclude)*.patch' \
+    ':(icase,exclude)*/__snapshots__/*' \
+    | tee -a "$output"
+
 # Be less strict on whitespace with generated files
-git -c core.whitespace="-blank-at-eol,-blank-at-eof,-trailing-space" diff-index --check --cached "$AGAINST" -- ':(icase)*.patch' ':(icase)*/__snapshots__/*'
+git \
+    -c core.whitespace="-blank-at-eol,-blank-at-eof,-trailing-space" \
+    diff-index --check --cached "$AGAINST" \
+    -- \
+    ':(icase)*.patch' \
+    ':(icase)*/__snapshots__/*' \
+    | tee -a "$output"
+
+# Normally `git diff --check` exits with non–zero when check fails, but
+# that doesn’t happen on Windows, so we need to collect output and check
+# if it’s empty.
+if [ "$( wc -l < "$output" )" -gt 0 ]
+then
+    exit 1
+fi
