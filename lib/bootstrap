@@ -197,7 +197,10 @@ then
     else
         # On systems without procfs get command from ps, which has quotes
         # stripped and hope for the best.
-        parent_cmd="$( ps -p "$GIT_PID" -o command= )"
+        parent_cmd="$(
+            # can’t use -o command=, because it’s not supported on Windows
+            ps -p "$GIT_PID" | awk '{ print $4 }'
+        )"
         if printf "%s" "$parent_cmd" | grep -qE "^${git_cmd_regex}[[:space:]]+"
         then
             PARENT_ARGV0="$( printf "%s" "$parent_cmd" | sed -E -e "s/^($git_cmd_regex).*/\\1/" )"
