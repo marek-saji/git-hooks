@@ -292,84 +292,98 @@ run_hooks ()
         printf '\n'
     fi
 
-    dir="$PACKAGE_DIR/$HOOK_TYPE.d"
-    pattern="^$( git config --get "$GLOBAL_CONFIG_NAMESPACE.pattern" || echo '.*')$"
     # TODO Support global hooks in ~/.config/githooks (overwritable in git config)
     # TODO Support local hooks in ./.githooks (overwritable in git config)
-    find "$dir" -maxdepth 1 -type f | sort |
-        while read -r hook
-        do
-            # TODO Use git-notes to store hooks ran for given commit and not re–run it
-            #      This way we can have linting in both commit and push and it  will run only for commit (unless it’s skipped there)
-            #      Probably use core.notesRef=refs/notes/hooks and `- [x] hook name`
 
-            if [ -x "$hook" ]
-            then
+    dir="$PACKAGE_DIR/$HOOK_TYPE.d"
+    pattern="^$( git config --get "$GLOBAL_CONFIG_NAMESPACE.pattern" || echo '.*')$"
+    if ! [ -d "$dir" ]
+    then
+        hook_files=
+    else
+        hook_files="$(
+            find "$dir" -maxdepth 1 -type f \
+                | sort \
+                | while read -r hook
+                  do
+                      name="$( basename "$hook" .sh  | sed 's/^[0-9_ -]*//' )"
+                      if [ -x "$hook" ] && echo "$name" | grep -q "$pattern"
+                      then
+                          echo "$hook"
+                      fi
+                  done
+        )"
+    fi
+
+    if [ -n "$hook_files" ]
+    then
+        echo "$hook_files" \
+            | while read -r hook
+            do
+                # TODO Use git-notes to store hooks ran for given commit and not re–run it
+                #      This way we can have linting in both commit and push and it  will run only for commit (unless it’s skipped there)
+                #      Probably use core.notesRef=refs/notes/hooks and `- [x] hook name`
                 name="$( basename "$hook" .sh  | sed 's/^[0-9_ -]*//' )"
                 CONFIG_NAMESPACE="$GLOBAL_CONFIG_NAMESPACE.$name"
                 enabled_shorthand_config_name="$CONFIG_NAMESPACE"
-                if
-                  echo "$name" | grep -q "$pattern"
+
+                if [ "$VERBOSITY" -ge 1 ]
                 then
-                    if [ "$VERBOSITY" -ge 1 ]
+                    secondary "$name"
+                fi
+
+                if
+                  ! is_enabled "$CONFIG_NAMESPACE.enabled" ||
+                  ! is_enabled "$enabled_shorthand_config_name"
+                then
+                    if [ "$VERBOSITY" -ge 2 ]
                     then
-                        secondary "$name"
+                        secondary "→ disabled"
+                    fi
+                else
+                    start_ms=$( time_ms )
+
+                    export GLOBAL_CONFIG_NAMESPACE CONFIG_NAMESPACE
+                    export NULL_REF
+                    # shellcheck disable=SC1090
+                    if ! ( . "$hook" )
+                    then
+                        error "%s “%s” hook failed" "$HOOK_TYPE" "$name"
+                        # TODO Hmm… maybe also skip checks that already passed?
+                        if [ -z "$PARENT_ARGV0" ]
+                        then
+                            secondary "To temporary disable add this directly after \`git\` (and before the command like \`commit\` or \`push\`):\n    -c %s=false " "$enabled_shorthand_config_name"
+                        else
+                            secondary "To temporary disable run:\n    %s -c %s=false%s" "$PARENT_ARGV0" "$enabled_shorthand_config_name" "$PARENT_ARGV"
+                        fi
+                        false
                     fi
 
-                    if
-                      ! is_enabled "$CONFIG_NAMESPACE.enabled" ||
-                      ! is_enabled "$enabled_shorthand_config_name"
+                    end_ms=$( time_ms )
+                    if [ "$VERBOSITY" -ge 2 ]
                     then
-                        if [ "$VERBOSITY" -ge 2 ]
+                        duration_ms=$(( end_ms - start_ms ))
+                        if [ $duration_ms != 0 ]
                         then
-                            secondary "→ disabled"
-                        fi
-                    else
-                        start_ms=$( time_ms )
-
-                        export GLOBAL_CONFIG_NAMESPACE CONFIG_NAMESPACE
-                        export NULL_REF
-                        # shellcheck disable=SC1090
-                        if ! ( . "$hook" )
-                        then
-                            error "%s “%s” hook failed" "$HOOK_TYPE" "$name"
-                            # TODO Hmm… maybe also skip checks that already passed?
-                            if [ -z "$PARENT_ARGV0" ]
+                            if [ "$duration_ms" -gt "$MS_VERY_HIGH" ]
                             then
-                                secondary "To temporary disable add this directly after \`git\`:\n    -c %s=false " "$enabled_shorthand_config_name"
+                                duration_color="$TPUT_VERY_HIGH_VALUE"
+                            elif [ "$duration_ms" -gt "$MS_HIGH" ]
+                            then
+                                duration_color="$TPUT_HIGH_VALUE"
                             else
-                                secondary "To temporary disable run:\n    %s -c %s=false%s" "$PARENT_ARGV0" "$enabled_shorthand_config_name" "$PARENT_ARGV"
+                                duration_color=
                             fi
-                            false
+                            printf "${TPUT_SECONDARY}→ took ${duration_color}%.3fs${TPUT_PRIMARY}${TPUT_SECONDARY}.${TPUT_PRIMARY}\n" "${duration_ms}e-3"
                         fi
-
-                        end_ms=$( time_ms )
-                        if [ "$VERBOSITY" -ge 2 ]
-                        then
-                            duration_ms=$(( end_ms - start_ms ))
-                            if [ $duration_ms != 0 ]
-                            then
-                                if [ "$duration_ms" -gt "$MS_VERY_HIGH" ]
-                                then
-                                    duration_color="$TPUT_VERY_HIGH_VALUE"
-                                elif [ "$duration_ms" -gt "$MS_HIGH" ]
-                                then
-                                    duration_color="$TPUT_HIGH_VALUE"
-                                else
-                                    duration_color=
-                                fi
-                                printf "${TPUT_SECONDARY}→ took ${duration_color}%.3fs${TPUT_PRIMARY}${TPUT_SECONDARY}.${TPUT_PRIMARY}\n" "${duration_ms}e-3"
-                            fi
-                        fi
-
                     fi
                 fi
-            fi
-        done
+            done
 
-    if [ "$VERBOSITY" -ge 0 ]
-    then
-        printf '✅ '
-        echo "$success_messages" | random_line
+        if [ "$VERBOSITY" -ge 0 ]
+        then
+            printf '%s ✅ ' "$HOOK_TYPE"
+            echo "$success_messages" | random_line
+        fi
     fi
 }
