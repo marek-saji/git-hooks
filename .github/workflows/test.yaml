@@ -12,7 +12,6 @@ jobs:
           # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#choosing-github-hosted-runners
           - ubuntu-20.04
           - ubuntu-latest
-          - macos-11
           - macos-latest
     runs-on: ${{ matrix.os }}
     steps:
