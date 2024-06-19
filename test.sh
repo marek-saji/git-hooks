@@ -144,8 +144,8 @@ OK
 
 TEST "pre-commit: non-ascii-filenames failing" "non-ascii-filenames"
 
-: > 'fóó'
-commit 'fóó' | assert_fail 'non-ascii-filenames'
+: > 'żółć'
+commit 'żółć' | assert_fail 'non-ascii-filenames'
 OK
 
 
