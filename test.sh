@@ -84,10 +84,29 @@ push ()
     git push --quiet -u origin main 2>&1
 }
 
+is_windows ()
+{
+    uname -sr | grep -Ei '^(cygwin|mingw|msys)' > /dev/null
+}
+
+tee_stderr ()
+{
+    if is_windows
+    then
+        # on windows we can check for /dev/stderr and it exists, but running
+        # the following command will fail with:
+        #     tee: /dev/stderr: No such file or directory
+        # so `cat` is here as a fallback
+        cat
+    else
+        tee -a /dev/stderr
+    fi
+}
+
 assert_fail ()
 {
     # shellcheck disable=SC1111
-    tee -a /dev/stderr | grep -q "“$1” hook failed"
+    tee_stderr | grep -q "“$1” hook failed"
 }
 
 set_npm_test ()
@@ -131,7 +150,7 @@ OK
 TEST "pre-commit: git-check temporary disable command" "git-check"
 
 printf 'This has white space at the end of the line:    ' > foo
-commit foo | tee -a /dev/stderr | grep -qE '^    "?(.*/)?git"? -c hooks.git-check=false "?commit'
+commit foo | tee_stderr | grep -qE '^    "?(.*/)?git"? -c hooks.git-check=false "?commit'
 OK
 
 
