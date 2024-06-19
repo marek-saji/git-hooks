@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 set -ue
 
 # TODO Heavily DRY–out with lint-eslint

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 set -ue
 
 print_help ()
@@ -105,12 +105,9 @@ find "$source_hooks_dir" -type f |
         then
             printf "%s hook already exists — skipping.\n" "$name"
         else
-            shell="$( command -v sh || command -v bash )"
             # shellcheck disable=SC2016
-            printf '#!%s\nset -eu\n\nexport HOOKS_DIR="%s"\nexport GIT_PID="$PPID"\n"%s" "%s" "$@"\n' \
-                "$shell" \
+            printf '#!/usr/bin/env sh\nset -eu\n\nexport GIT_PID="$PPID"\nexport HOOKS_DIR="%s"\n. "%s" "$@"\n' \
                 "$package_dir" \
-                "$shell" \
                 "$source_hook_file" \
                 > "$target_hook_file"
             chmod +x "$target_hook_file"

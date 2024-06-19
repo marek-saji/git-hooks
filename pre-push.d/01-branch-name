@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 set -ue
 
 allow_regexp="$( git config --get "$CONFIG_NAMESPACE.allow-regexp" || : )"

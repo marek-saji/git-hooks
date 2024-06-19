@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 # shellcheck disable=SC1111
 set -ue
 

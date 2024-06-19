@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 set -ue
 
 # `act` is quite a generic name. Detect if it’s what we expect it to be

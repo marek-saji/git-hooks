@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 set -ue
 
 # FIXME --report-unused-disable-directives and --rule='import/no-unused-modules:0' conflict with each other

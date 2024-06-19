@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 set -ue
 
 # Unset in case we are running from `npm test`
@@ -178,7 +178,7 @@ OK
 
 TEST "Run commands from node_modules" "lint-eslint"
 
-printf '#!/bin/sh\necho OK > ./eslint-called\n' > node_modules/.bin/eslint
+printf '#!/usr/bin/env sh\necho OK > ./eslint-called\n' > node_modules/.bin/eslint
 chmod +x node_modules/.bin/eslint
 : > foo.js
 commit foo.js
@@ -193,7 +193,7 @@ then
     TEST "pre-push: npm-test: jest" "npm-test"
 
     set_npm_test "jest"
-    printf '#!/bin/sh\necho "$@" > ./jest-args\n' > node_modules/.bin/jest
+    printf '#!/usr/bin/env sh\necho "$@" > ./jest-args\n' > node_modules/.bin/jest
     chmod +x node_modules/.bin/jest
     : > foo.js
     push foo.js
