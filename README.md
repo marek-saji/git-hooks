@@ -45,7 +45,7 @@ Configuration
 ### Disabling a hook
 
     git config --type=int hooks.$HOOK_NAME.enabled false
-    # e.g. hooks.lint.enabled
+    # e.g. hooks.npm-test.enabled
 
 You can also disable a hook for single run, e.g.
 
@@ -78,32 +78,33 @@ of `-v` parameter(s) passed to git-commit.
 
     git config --type=bool hooks.tmpWorkspace true
 
-Some hooks might run for a longer time (e.g. npm-test pre-push). With
+Some hooks might run for a longer time (e.g. `npm-test` pre-push). With
 this option enabled, they might choose to run in a temporary worktree
-(see `git worktree --help` for details) so that your main worktree is
-not blocked — you can switch branches, commit etc. while your tests
-run.
+(see `git worktree --help` to learn about git worktrees) so that your
+main worktree is not blocked — you can switch branches, commit etc.
+while your tests run.
 
 
-### Hooks
+### Hook–specific options
 
-#### pre-push: npm-test
+#### pre-push: `npm-test`
 
-Detects if [jest] is being used for testing and if so, only runs tests
-that are related to modified files, but that heuristic is not perfect.
-This option enables you to additionally always run selected tests, e.g.
+Hook detects if [jest] is being used for testing and if so, only runs
+tests that are related to modified files, but that heuristic is not
+perfect. You can force selected files to always be included, e.g.
 
-    git config hooks.pre-push.npm-test.forcedFiles tests/storybook.test.js
+    git config hooks.pre-push.npm-test.forcedJestTests tests/storybook.test.js
 
 
 [jest]: https://jestjs.io/
 
 
-#### pre-push: branch-name
+#### pre-push: `branch-name`
 
-Allows to set up a [extended grep regular expression] to match branches when pushing.
+When configured with a [extended grep regular expression] will check if
+branch names match it, e.g.
 
-    git config hooks.pre-push.branch-name.allow-regexp '^(feature|fix|doc|chore)/'
+    git config hooks.pre-push.branch-name.allow-regexp '^(feat|fix|doc|chore)/'
 
 You don’t have to list your main branch.
 

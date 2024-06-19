@@ -43,7 +43,7 @@ then
         return
     fi
 
-    # TODO This should be a globa thing
+    # TODO This should be a global thing
     # TODO Auto–cleanup on next run (keep a pidfile)
     workspace_enabled_config="$GLOBAL_CONFIG_NAMESPACE.tmpWorkspace"
     workspace_enabled="$( git config --get "$workspace_enabled_config" || echo false )"
@@ -101,10 +101,10 @@ then
     if uses_jest "$test_script"
     then
         # TODO Search for initStoryshots and always run that
-        # TODO Use --changedSince if forcedFiles is not set
+        # TODO Use --changedSince if forcedJestTests is not set
         # TODO If list is too long, fall–back to running all tests
         {
-            git config --get "$CONFIG_NAMESPACE.forcedFiles" || :
+            git config --get "$CONFIG_NAMESPACE.forcedJestTests" || :
             git diff --name-only "$RANGE"
         } | xargs sh -$-"$shopt"c "npm test $npm_run_args -- --ci --color --coverage=no --passWithNoTests --findRelatedTests \"\$@\"" _
     else
