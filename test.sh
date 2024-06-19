@@ -74,13 +74,13 @@ ALL_DONE ()
 commit ()
 {
     git add "$@"
-    git commit --quiet -m A 2>&1
+    git commit --quiet -m A "$@" 2>&1
 }
 
 push ()
 {
     git add "$@"
-    git commit --no-verify --quiet -m A 2>&1
+    git commit --no-verify --quiet -m A "$@" 2>&1
     git push --quiet -u origin main 2>&1
 }
 
