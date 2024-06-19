@@ -102,7 +102,12 @@ else
 fi
 export REBASE_IN_PROGRESS
 
-PACKAGE_DIR="$( dirname "$( readlink "$0" || echo "$0" )" )/.."
+if [ -z "$HOOKS_DIR" ]
+then
+    echo 1>&2 "ERROR: Tried to bootstrap @saji/git-hooks without HOOKS_DIR set."
+    exit 64 # EX_USAGE
+fi
+PACKAGE_DIR="$HOOKS_DIR"
 export PACKAGE_DIR
 
 BASE_BRANCH="$( git config --get-regexp '^branch\..*\.remote' | head -n1 | cut -d. -f2 )"
@@ -165,45 +170,43 @@ export NODE_MODULES_CHECKED
 
 
 # Figure out how git was called
-git_cmd_regex="(\/[a-zA-Z0-9_/-]+\/)?git"
-if [ -e "/proc/$PPID/cmdline" ]
+PARENT_ARGV0=
+PARENT_ARGV=
+if [ -n "$GIT_PID" ]
 then
-    # On systems with procfs get command from there since it contains
-    # words separated by null bytes, so we can restore quoting
-    PARENT_ARGV0="$( cut -d '' -f1 "/proc/$PPID/cmdline" )"
-    if [ -n "$PARENT_ARGV0" ]
+    git_cmd_regex="(\/[a-zA-Z0-9_/-]+\/)?git"
+    if [ -e "/proc/$GIT_PID/cmdline" ]
     then
-        PARENT_ARGV0="$( quote_if_needed "$PARENT_ARGV0" )"
-
-        PARENT_ARGV="$(
-            cut -d '' -f2- "/proc/$PPID/cmdline" |
-                sed 's/\x0*$//' |
-                tr '\0' '\n' |
-                while read -r arg
-                do
-                    printf ' '
-                    quote_if_needed "$arg"
-                done
-        )"
+        # On systems with procfs get command from there since it contains
+        # words separated by null bytes, so we can restore quoting
+        parent_argv0="$( cut -d '' -f1 "/proc/$GIT_PID/cmdline" )"
+        if [ -n "$parent_argv0" ]
+        then
+            PARENT_ARGV0="$( quote_if_needed "$parent_argv0" )"
+            PARENT_ARGV="$(
+                cut -d '' -f2- "/proc/$GIT_PID/cmdline" |
+                    sed 's/\x0*$//' |
+                    tr '\0' '\n' |
+                    while read -r arg
+                    do
+                        printf ' '
+                        quote_if_needed "$arg"
+                    done
+            )"
+        fi
     else
-        PARENT_ARGV0=
-        PARENT_ARGV=
+        # On systems without procfs get command from ps, which has quotes
+        # stripped and hope for the best.
+        parent_cmd="$( ps -p "$GIT_PID" -o command= )"
+        if printf "%s" "$parent_cmd" | grep -qE "^${git_cmd_regex}[[:space:]]+"
+        then
+            PARENT_ARGV0="$( printf "%s" "$parent_cmd" | sed -E -e "s/^($git_cmd_regex).*/\\1/" )"
+            PARENT_ARGV=" $( printf "%s" "$parent_cmd" | sed -E "s/^${git_cmd_regex}[[:space:]]+//" )"
+        fi
+        unset parent_cmd
     fi
-else
-    # On systems without procfs get command from ps, which has quotes
-    # stripped and hope for the best.
-    parent_cmd="$( ps -p "$PPID" -o command= )"
-    if printf "%s" "$parent_cmd" | grep -qE "^${git_cmd_regex}[[:space:]]+"
-    then
-        PARENT_ARGV0="$( printf "%s" "$parent_cmd" | sed -E -e "s/^($git_cmd_regex).*/\\1/" )"
-        PARENT_ARGV=" $( printf "%s" "$parent_cmd" | sed -E "s/^${git_cmd_regex}[[:space:]]+//" )"
-    else
-        PARENT_ARGV0=
-        PARENT_ARGV=
-    fi
-    unset parent_cmd
+    unset git_cmd_regex
 fi
-unset git_cmd_regex
 
 
 success_messages="All hooks seem happy.

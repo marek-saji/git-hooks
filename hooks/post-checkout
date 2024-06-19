@@ -1,8 +1,14 @@
 #!/bin/sh
 set -ue
 
+if [ -z "$HOOKS_DIR" ]
+then
+    echo 1>&2 "ERROR: HOOKS_DIR is not set. Please re–install @saji/git-hooks."
+    exit 64 # EX_USAGE
+fi
+
 # shellcheck disable=SC1091
-. "$( dirname "$( readlink "$0" || echo "$0" )" )/../lib/bootstrap"
+. "$HOOKS_DIR/lib/bootstrap"
 
 PREV_REF="$1" # FIXME Is null-ref on clone and git worktree add
 NEW_REF="$2"
