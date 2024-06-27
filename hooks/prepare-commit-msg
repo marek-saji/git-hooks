@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -ue
 
-if [ -z "$HOOKS_DIR" ]
+if [ -z "${HOOKS_DIR-}" ]
 then
     echo 1>&2 "ERROR: HOOKS_DIR is not set. Please re–install @saji/git-hooks."
     exit 64 # EX_USAGE

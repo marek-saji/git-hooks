@@ -111,6 +111,7 @@ find "$source_hooks_dir" -type f |
                 "$source_hook_file" \
                 > "$target_hook_file"
             chmod +x "$target_hook_file"
+            printf "%s hook installed\n" "$name"
         fi
     done
 
