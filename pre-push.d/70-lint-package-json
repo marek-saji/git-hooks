@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+set -ue
+
+# FIXME Use $RANGE
+
+if
+    [ -n "$RANGE" ] &&
+    [ -r package.json ] &&
+    command -v npm >/dev/null
+then
+    if [ "$VERBOSITY" -ge 6 ]
+    then
+        shopt="x"
+    else
+        shopt=
+    fi
+    if sh -"$shopt$-" -c 'npm ls --depth=1 2>&1 | grep "^npm error " 1>&2'
+    then
+        exit 1
+    fi
+fi
