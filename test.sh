@@ -44,6 +44,7 @@ TEST ()
     git config --local user.email "tester@example.com"
     git commit -m 'Root' --allow-empty --quiet
     git config --local hooks.verbosity 0
+    git config --local color.ui false
     git config --local hooks.pattern "$pattern"
     npm init --yes >/dev/null
 
@@ -165,6 +166,20 @@ TEST "pre-commit: non-ascii-filenames failing" "non-ascii-filenames"
 
 : > 'żółć'
 commit 'żółć' | assert_fail 'non-ascii-filenames'
+OK
+
+
+TEST "pre-push: wip-code" "wip-code"
+
+printf "// WIP\n" > index.js
+push index.js | assert_fail 'wip-code'
+OK
+
+
+TEST "pre-push: wip-code, possible false–positive" "wip-code"
+
+printf "// THWIP\n" > index.js
+push index.js
 OK
 
 
