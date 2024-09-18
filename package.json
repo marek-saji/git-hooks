@@ -27,6 +27,6 @@
   },
   "scripts": {
     "test": "sh ./test.sh",
-    "postinstall": "node -e \"if (process.env.ComSpec?.endsWith('\\cmd.exe')) { process.stdout.write('ERROR: To use @saji/git-hooks on Windows, install it and later use git inside a bash shell NOT cmd.exe.\\n'); process.exit (1) }\" && sh ./install.sh"
+    "postinstall": "node -e \"if (process.env.ComSpec?.endsWith('\\cmd.exe')) { process.stderr.write('ERROR: To use @saji/git-hooks on Windows, install it and later use git inside a bash shell NOT cmd.exe.\\n'); process.exit (64) }\" && sh ./install.sh"
   }
 }

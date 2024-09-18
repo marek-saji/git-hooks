@@ -8,6 +8,7 @@ defaults:
     shell: bash
 
 jobs:
+
   test:
     name: Test
     strategy:
@@ -23,3 +24,45 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
       - run: npm test
+
+  test-windows-cmd:
+    name: Test Windows cmd.exe
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: cmd
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - name: 'Set up test env'
+        run: |
+          mkdir test-env
+          cd test-env
+          git init .
+          npm init --yes
+      - name: 'Try to install from cmd.exe'
+        working-directory: test-env
+        run: |
+          npm install --save-dev ..\ > output.log 2>&1
+        id: install
+        continue-on-error: true
+      - name: 'Check outcome'
+        working-directory: test-env
+        shell: sh
+        run: |
+          status=0
+
+          if ! grep -F 'ERROR: To use @saji/git-hooks on Windows, install it and later use git inside a bash shell NOT cmd.exe.' output.log
+          then
+            echo "Expected to find error message in output, got:"
+            cat output.log
+            status=1
+          fi
+
+          if [ "${{ steps.install.outcome }}" != "failure" ]
+          then
+            echo "Expected outcome failure, got ${{ steps.install.outcome }}"
+            status=1
+          fi
+
+          exit $status
