@@ -186,20 +186,23 @@ test -e ./eslint-called
 OK
 
 
-# FIXME Disabled on Windows, because (even though same approach works above for eslint),
-#       it cannot find `jest`.
-if ! is_windows
-then
-    TEST "pre-push: npm-test: jest" "npm-test"
+TEST "pre-push: npm-test: jest" "npm-test"
 
-    set_npm_test "jest"
-    printf '#!/usr/bin/env sh\necho "$@" > ./jest-args\n' > node_modules/.bin/jest
-    chmod +x node_modules/.bin/jest
-    : > foo.js
-    push foo.js
-    grep ' --findRelatedTests.*foo.js' ./jest-args
-    OK
-fi
+(
+    mkdir -p "$test_dir/jest"
+    cd "$test_dir/jest/"
+    npm init --yes >/dev/null
+    printf '#!/usr/bin/env sh\necho "$@" > ./jest-args\n' > ./jest
+    chmod +x ./jest
+    sed -i -e 's~{~{"bin": "jest",~' package.json
+)
+
+npm install --save-dev "$test_dir/jest"
+set_npm_test "jest"
+: > foo.js
+push foo.js
+grep ' --findRelatedTests.*foo.js' ./jest-args
+OK
 
 
 TEST "pre-push: npm-test: worktree" "npm-test"
