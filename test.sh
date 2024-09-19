@@ -15,7 +15,7 @@ then
     mkdir -p "$test_dir"
 else
     test_dir="$( mktemp -d )"
-    trap 'rm -rf "$test_dir"' EXIT HUP INT QUIT TERM
+    trap 'echo "Cleanup"; rm -rf "$test_dir"' EXIT HUP INT QUIT TERM
 fi
 test_repo_dir="$test_dir/repo"
 test_remote_dir="$test_dir/remote"
