@@ -7,8 +7,10 @@ if [ -n "$RANGE" ]
 then
     # Warning: Including \<…\> in regex here causes problems on Windows
     regex='WIP|TODO'
-    if
-        git diff --pickaxe-regex -S "\<($regex)\>" "$RANGE" | grep -E "^\\+.*\<($regex)\>"
+
+    # Warning: Used to call git-diff with `--pickaxe-regex -S "\<($regex)\>"`, but
+    # it caused problems on macOS
+    if git diff "$RANGE" | grep -E "^\\+.*\<($regex)\>"
     then
         error 'Found changes introducing WIP|TODO. Resolve before pushing.'
         false
