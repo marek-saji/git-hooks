@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 set -ue
 
 # Unset in case we are running from `npm test`
@@ -15,7 +15,7 @@ then
     mkdir -p "$test_dir"
 else
     test_dir="$( mktemp -d )"
-    trap 'rm -rf "$test_dir"' EXIT HUP INT QUIT TERM
+    trap 'echo "Cleanup"; rm -rf "$test_dir"' EXIT HUP INT QUIT TERM
 fi
 test_repo_dir="$test_dir/repo"
 test_remote_dir="$test_dir/remote"
@@ -44,6 +44,7 @@ TEST ()
     git config --local user.email "tester@example.com"
     git commit -m 'Root' --allow-empty --quiet
     git config --local hooks.verbosity 0
+    git config --local color.ui false
     git config --local hooks.pattern "$pattern"
     npm init --yes >/dev/null
 
@@ -74,20 +75,39 @@ ALL_DONE ()
 commit ()
 {
     git add "$@"
-    git commit --quiet -m A 2>&1
+    git commit --quiet -m A "$@" 2>&1
 }
 
 push ()
 {
     git add "$@"
-    git commit --no-verify --quiet -m A 2>&1
+    git commit --no-verify --quiet -m A "$@" 2>&1
     git push --quiet -u origin main 2>&1
+}
+
+is_windows ()
+{
+    uname -sr | grep -Ei '^(cygwin|mingw|msys)' > /dev/null
+}
+
+tee_stderr ()
+{
+    if is_windows
+    then
+        # on windows we can check for /dev/stderr and it exists, but running
+        # the following command will fail with:
+        #     tee: /dev/stderr: No such file or directory
+        # so `cat` is here as a fallback
+        cat
+    else
+        tee -a /dev/stderr
+    fi
 }
 
 assert_fail ()
 {
     # shellcheck disable=SC1111
-    tee -a /dev/stderr | grep -q "“$1” hook failed"
+    tee_stderr | grep -q "“$1” hook failed"
 }
 
 set_npm_test ()
@@ -131,7 +151,7 @@ OK
 TEST "pre-commit: git-check temporary disable command" "git-check"
 
 printf 'This has white space at the end of the line:    ' > foo
-commit foo | tee -a /dev/stderr | grep -qE '^    "?(.*/)?git"? -c hooks.git-check=false "?commit'
+commit foo | tee_stderr | grep -qE ' -c hooks.git-check=false '
 OK
 
 
@@ -144,8 +164,22 @@ OK
 
 TEST "pre-commit: non-ascii-filenames failing" "non-ascii-filenames"
 
-: > 'fóó'
-commit 'fóó' | assert_fail 'non-ascii-filenames'
+: > 'żółć'
+commit 'żółć' | assert_fail 'non-ascii-filenames'
+OK
+
+
+TEST "pre-push: wip-code" "wip-code"
+
+printf "// WIP\n" > index.js
+push index.js | assert_fail 'wip-code'
+OK
+
+
+TEST "pre-push: wip-code, possible false–positive" "wip-code"
+
+printf "// THWIP\n" > index.js
+push index.js
 OK
 
 
@@ -157,13 +191,32 @@ push foo.js
 OK
 
 
+TEST "Run commands from node_modules" "lint-eslint"
+
+printf '#!/usr/bin/env sh\necho OK > ./eslint-called\n' > node_modules/.bin/eslint
+chmod +x node_modules/.bin/eslint
+: > foo.js
+commit foo.js
+test -e ./eslint-called
+OK
+
+
 TEST "pre-push: npm-test: jest" "npm-test"
 
-set_npm_test ": jest; sh -c 'echo \$* > ./out' --"
-cat package.json
+(
+    mkdir -p "$test_dir/jest"
+    cd "$test_dir/jest/"
+    npm init --yes >/dev/null
+    printf '#!/usr/bin/env sh\necho "$@" > ./jest-args\n' > ./jest
+    chmod +x ./jest
+    sed -i -e 's~{~{"bin": "jest",~' package.json
+)
+
+npm install --save-dev "$test_dir/jest"
+set_npm_test "jest"
 : > foo.js
 push foo.js
-grep ' --findRelatedTests.*foo.js' ./out
+grep ' --findRelatedTests.*foo.js' ./jest-args
 OK
 
 
@@ -184,15 +237,6 @@ TEST "Disablig all hooks" "git-check"
 git config hooks.enabled false
 printf 'This has white space at the end of the line:    ' > foo
 commit foo
-OK
-
-TEST "Run commands from node_modules" "lint-eslint"
-
-printf "#!/bin/sh\necho OK > ./eslint-called" > node_modules/.bin/eslint
-chmod +x node_modules/.bin/eslint
-: > foo.js
-PATH=/bin:/usr/bin commit foo.js
-test -e ./eslint-called
 OK
 
 CLEAN

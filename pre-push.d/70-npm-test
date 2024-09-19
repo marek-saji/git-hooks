@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 set -ue
 
 # TODO Lock switching branches while this hook is working
@@ -108,6 +108,7 @@ then
             git diff --name-only "$RANGE"
         } | xargs sh -$-"$shopt"c "npm test $npm_run_args -- --ci --color --coverage=no --passWithNoTests --findRelatedTests \"\$@\"" _
     else
+        # shellcheck disable=SC2086
         npm test $npm_run_args
     fi
     test_exit_code=$?

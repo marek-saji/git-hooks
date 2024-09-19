@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 set -ue
 
 print_help ()
@@ -90,27 +90,28 @@ find "$source_hooks_dir" -type f |
         name="$( basename "$path" )"
         source_hook_file="$source_hooks_dir/$name"
         target_hook_file="./$name"
+
+        # Instead of linking, we create small scripts that source the
+        # hook files. This is, because some other hooks (e.g. lefthook)
+        # tend to change contents of hook files when they install
+        # themselves.
+
         if [ -n "$ARG_FORCE" ]
         then
-            ln -vsf "$source_hooks_dir/$name" "$target_hook_file"
-        elif [ -h "$target_hook_file" ]
+            rm -fv "$target_hook_file"
+        fi
+
+        if [ -e "$target_hook_file" ]
         then
-            symlink_target="$(
-                readlink "$target_hook_file" \
-                || echo "$target_hook_file"
-            )"
-            if ! [ -e "$target_hook_file" ]
-            then
-                printf "WARNING %s hooks already exists (it’s a broken symlink to %s) — skipping.\n" "$name" "$symlink_target"
-            elif [ "$symlink_target" != "$source_hook_file" ]
-            then
-                printf "INFO %s hooks already exists (symlink to %s) — skipping.\n" "$name" "$symlink_target"
-            fi
-        elif [ -e "$target_hook_file" ]
-        then
-            printf "%s hook already exists (non-symlink file) — skipping.\n" "$name"
+            printf "%s hook already exists — skipping.\n" "$name"
         else
-            ln -vs "$source_hook_file" "$target_hook_file"
+            # shellcheck disable=SC2016
+            printf '#!/usr/bin/env sh\nset -eu\n\nexport GIT_PID="$PPID"\nexport HOOKS_DIR="%s"\n. "%s" "$@"\n' \
+                "$package_dir" \
+                "$source_hook_file" \
+                > "$target_hook_file"
+            chmod +x "$target_hook_file"
+            printf "%s hook installed\n" "$name"
         fi
     done
 

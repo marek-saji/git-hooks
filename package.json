@@ -1,6 +1,6 @@
 {
   "name": "@saji/git-hooks",
-  "version": "1.1.16",
+  "version": "1.2.0-rc.4",
   "author": {
     "name": "Marek ‘saji’ Augustynowicz",
     "email": "marek.aug@gmail.com"
@@ -23,10 +23,10 @@
     "lint"
   ],
   "bin": {
-    "git-install-hooks": "./install.sh"
+    "git-install-hooks": "sh ./install.sh"
   },
   "scripts": {
-    "test": "./test.sh",
-    "postinstall": "./install.sh"
+    "test": "sh ./test.sh",
+    "postinstall": "node -e \"if (process.env.ComSpec?.endsWith('\\cmd.exe')) { process.stderr.write('ERROR: To use @saji/git-hooks on Windows, install it and later use git inside a bash shell NOT cmd.exe.\\n'); process.exit (64) }\" && sh ./install.sh"
   }
 }
