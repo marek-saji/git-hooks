@@ -143,3 +143,8 @@ git config hooks.pre-push.branch-name.allow-regexp '^((feat|fix|doc|chore)/|prod
 You don’t have to list your main branch.
 
 [extended grep regular expression]: https://www.gnu.org/software/grep/manual/grep.html#Basic-vs-Extended
+
+
+## License
+
+Licensed under [ISC](LICENSE).
