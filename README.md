@@ -1,59 +1,85 @@
-git hooks
-=========
+# git hooks
 
-Opinionated set of git hooks.
+Zero config, opinionated git hooks that you can drop into your project
+and it will just work™.
 
-At the moment supports JavaScript, CSS, shell scripts and markdown files.
+If there’s EsLint config, will lint your files, if there’s `test` npm
+script will run it on push, if commit lint config, will check your
+commit messages etc, etc, etc. For full list of hooks, see files in
+`*.d` directories.
 
-[![npm package](https://img.shields.io/npm/v/@saji/git-hooks)](https://www.npmjs.com/package/@saji/git-hooks)
 [![CI status](https://github.com/marek-saji/git-hooks/actions/workflows/test.yaml/badge.svg)](https://github.com/marek-saji/git-hooks/actions/workflows/test.yaml)
 
+## Installation
 
-Installation
-------------
+### For everyone who clones your repository
 
-### via npm dependency (recommended)
+Install hooks as a dependency in your project:
 
-1. `npm install --save-dev @saji/git-hooks`
-2. Add `git-install-hooks` to your `postinstall` script
+```sh
+npm install --save-dev @saji/git-hooks
+```
 
-### from global npm install
+### For yourself
 
-1. `npm install -g @saji/git-hooks`
-2. Run `git-install-hooks PATH_TO_YOUR_PROJECT`
+1. Install hooks package globally:
 
-### from cloned repository
+   ```sh
+   npm install -g @saji/git-hooks
+   ```
 
-1. Clone this repository anywhere
-2. Run `YOUR_ANYWHERE/install.sh PATH_TO_YOUR_PROJECT`
+2. Install it in any repository you want:
 
-### by changing hooksPath
+   ```sh
+   git install-hooks
+   ```
 
-1. Clone this repository anywhere
-2. Run `git config core.hooksPath YOUR_ANYWHERE`
-   (use `git config --global` if you want to do it globally)
+   Add `-f` to force overwriting any existing hooks.
 
-### via whatever
+### Other methods
 
-You may also use git submodules. Or download files, drop them in your
-`.git/hooks`, I don’t care.
+#### from cloned repository
 
+1. Clone this repository somewhere
 
-Configuration
--------------
+2. In your repository run:
+
+   ```sh
+   SOMEWHERE/install.sh`
+   ```
+
+#### by changing `hooksPath`
+
+1. Clone this repository somewhere
+
+2. In your repository run:
+
+   ```sh
+   git config core.hooksPath SOMEWHERE
+   ```
+
+   You could use `--global` to set it up for all your repositories.
+
+## Configuration
 
 ### Disabling a hook
 
-    git config --type=int hooks.$HOOK_NAME.enabled false
-    # e.g. hooks.npm-test.enabled
+```sh
+git config --type=int hooks.$HOOK_NAME.enabled false
+# e.g. hooks.npm-test.enabled
+```
 
 You can also disable a hook for single run, e.g.
 
-    git -c hooks.npm-test.enabled=false push
+```sh
+git -c hooks.npm-test.enabled=false push
+```
 
 As a shorthand you can omit `.enabled`:
 
-    git -c hooks.npm-test=false push
+```sh
+git -c hooks.npm-test=false push
+```
 
 ### Disabling all hooks
 
@@ -62,7 +88,9 @@ config option.
 
 ### Changing verbosity
 
-    git config --type=int hooks.verbosity 2
+```sh
+git config --type=int hooks.verbosity 2
+```
 
 - -1: Only error messages
 - 0: Also show celebratory success message (default)
@@ -71,19 +99,23 @@ config option.
 - 7: Also print main commands for some hooks
 - 9: Also run everything with `set -x`
 
-(TODO) If not specified in config, verbosity is controlled by number
-of `-v` parameter(s) passed to git-commit.
+<!--
+TODO If not specified in config, verbosity is controlled by number of `-v` parameter(s) passed to git-commit.
+-->
 
+<!-- TODO Rewrite this section, when worktree is properly implemented.
 ### Temporary worktree
 
-    git config --type=bool hooks.tmpWorkspace true
+```sh
+git config --type=bool hooks.tmpWorkspace true
+```
 
 Some hooks might run for a longer time (e.g. `npm-test` pre-push). With
 this option enabled, they might choose to run in a temporary worktree
 (see `git worktree --help` to learn about git worktrees) so that your
 main worktree is not blocked — you can switch branches, commit etc.
 while your tests run.
-
+-->
 
 ### Hook–specific options
 
@@ -93,20 +125,21 @@ Hook detects if [jest] is being used for testing and if so, only runs
 tests that are related to modified files, but that heuristic is not
 perfect. You can force selected files to always be included, e.g.
 
-    git config hooks.pre-push.npm-test.forcedJestTests tests/storybook.test.js
-
+```sh
+git config hooks.pre-push.npm-test.forcedJestTests tests/storybook.test.js
+```
 
 [jest]: https://jestjs.io/
-
 
 #### pre-push: `branch-name`
 
 When configured with a [extended grep regular expression] will check if
 branch names match it, e.g.
 
-    git config hooks.pre-push.branch-name.allow-regexp '^(feat|fix|doc|chore)/'
+```sh
+git config hooks.pre-push.branch-name.allow-regexp '^((feat|fix|doc|chore)/|production$)'
+```
 
 You don’t have to list your main branch.
-
 
 [extended grep regular expression]: https://www.gnu.org/software/grep/manual/grep.html#Basic-vs-Extended
