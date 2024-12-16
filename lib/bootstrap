@@ -168,6 +168,9 @@ export PATH
 NODE_MODULES_CHECKED=
 export NODE_MODULES_CHECKED
 
+# Do not add packageManager field in package.json
+COREPACK_ENABLE_AUTO_PIN=0
+export COREPACK_ENABLE_AUTO_PIN
 
 # Figure out how git was called
 PARENT_ARGV0=
