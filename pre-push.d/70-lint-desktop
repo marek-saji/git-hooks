@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+set -ue
+
+export AGAINST="$RANGE"
+# shellcheck disable=SC1091
+. "$PACKAGE_DIR/pre-commit.d/70-lint-desktop"

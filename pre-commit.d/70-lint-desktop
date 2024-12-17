@@ -1,0 +1,62 @@
+#!/usr/bin/env sh
+set -ue
+
+if [ "$VERBOSITY" -ge 7 ]
+then
+    shopt=x
+    show_progress=1
+else
+    shopt=
+    show_progress=
+fi
+
+if [ -n "$AGAINST" ]
+then
+    if command -v desktop-file-validate >/dev/null 2>&1
+    then
+        set -- ':(icase)*.desktop'
+
+        # Don’t use --cached when AGAINST is a range (i.e. we are running pre-push hook)
+        # TODO Duplicated for all lint-* pre-commit hooks
+        if echo "$AGAINST" | grep -q -F ".."
+        then
+            diff_opt=
+        else
+            diff_opt="--cached"
+        fi
+
+        # TODO Run git-diff once?
+        total=$(( $(
+            git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" "$@" \
+                | wc -l
+        ) ))
+        if [ "$total" -gt 0 ]
+        then
+            # desktop-file-validate can’t run as `cat file |`, nor with
+            # `<( cat file )`, so we need to create a temporary file
+            tempdir=$( mktemp --directory --suffix="lint-desktop" )
+            trap 'rm -rf "$tempdir"' EXIT HUP INT QUIT TERM
+
+            git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" -- "$@" |
+                nl |
+                while read -r number file
+                do
+                    if [ -n "$show_progress" ] && [ "$total" != "1" ]
+                    then
+                        printf "%d/%d: " "$number" "$total" 1>&2
+                    fi
+                    # Make vars available to script(1)
+                    export shopt tempdir
+                    git show ":$file" > "$tempdir/test.desktop"
+                    (
+                        file_esc="$( printf "%s" "$file" | sed 's~/~\\/~g' )"
+                        script -q -f /dev/null -c '\
+                            cd "$tempdir" ; \
+                            set -$shopt ; \
+                            desktop-file-validate test.desktop \
+                        ' | sed "s/test.desktop/$file_esc/g"
+                    )
+                done
+        fi
+    fi
+fi
