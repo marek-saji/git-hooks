@@ -82,6 +82,8 @@ fi
 source_hooks_dir="$package_dir/hooks"
 target_source_hooks_dir="$git_dir/hooks"
 
+printf 'Installing hooks from %s into %s\n' "$source_hooks_dir" "$target_source_hooks_dir"
+
 mkdir -p "$target_source_hooks_dir"
 cd "$target_source_hooks_dir"
 find "$source_hooks_dir" -type f |
@@ -111,7 +113,7 @@ find "$source_hooks_dir" -type f |
                 "$source_hook_file" \
                 > "$target_hook_file"
             chmod +x "$target_hook_file"
-            printf "%s hook installed\n" "$name"
+            printf "%s hook installed ✔️\n" "$name"
         fi
     done
 
