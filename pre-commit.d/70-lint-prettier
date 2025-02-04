@@ -30,7 +30,7 @@ then
             # No unstaged modifications -- running prettier on files
 
             git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" |
-                xargs sh -$-"${shopt}" -c "prettier --ignore-unknown --check \"\$@\"" _
+                xargs sh -$-"${shopt}" -c "unset NO_COLOR ; prettier --ignore-unknown --check \"\$@\"" _
         else
             # Some staged modifications -- running prettier on staged diffs
 
@@ -59,10 +59,11 @@ then
                         then
                             printf "%d/%d: " "$number" "$total" 1>&2
                         fi
-                        git show :"$file" | {
+                        git show :"$file" | (
                             set -"$shopt"
+                            unset NO_COLOR
                             prettier --ignore-unknown --stdin-filepath="$file" --check
-                        }
+                        )
                     done
             fi
         fi
