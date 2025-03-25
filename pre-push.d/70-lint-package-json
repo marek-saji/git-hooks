@@ -14,8 +14,23 @@ then
     else
         shopt=
     fi
-    if sh -"$shopt$-" -c 'npm ls --depth=1 2>&1 | grep "^npm error " 1>&2'
+
+    if [ -r yarn.lock ]
     then
-        exit 1
+        if command -v yarn >/dev/null
+        then
+            if [ "$(yarn --version | cut -d. -f1)" -ge "2" ]
+            then
+                sh -"$shopt$-" -c "yarn install --check-resolutions --json 2>/dev/null | jq -r 'select(.type==\"error\") | \"\\(.displayName): \\(.data)\" | empty // halt_error(1)'"
+            else
+                sh -"$shopt$-" -c "yarn check --verify-tree"
+            fi
+        fi
+    elif command -v npm >/dev/null
+    then
+        if sh -"$shopt$-" -c 'npm ls --depth=1 2>&1 | grep "^npm error " 1>&2'
+        then
+            exit 1
+        fi
     fi
 fi
