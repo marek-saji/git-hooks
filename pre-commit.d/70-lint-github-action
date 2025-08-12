@@ -12,7 +12,16 @@ fi
 
 if [ -n "$AGAINST" ]
 then
-    if command -v action-validator >/dev/null 2>&1
+    actionlint_bin=
+    if actionlint --help 2>&1 | grep -q 'linter for GitHub Actions workflow files'
+    then
+        actionlint_bin="actionlint"
+    elif gh actionlint --help >/dev/null 2>&1
+    then
+        actionlint_bin="gh actionlint"
+    fi
+
+    if [ -n "$actionlint_bin" ]
     then
         set -- '.github/workflows/*.yml' '.github/workflows/*.yaml'
 
@@ -41,7 +50,7 @@ then
                     fi
                     git show ":$file" | {
                         set -"$shopt"
-                        action-validator /dev/stdin
+                        $actionlint_bin -
                     }
                 done
         fi
