@@ -15,6 +15,15 @@ URL="$2"
 
 while read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA REST
 do
+    if [ "$VERBOSITY" -ge 8 ]
+    then
+        echo "LOCAL_REF = $LOCAL_REF"
+        echo "LOCAL_SHA = $LOCAL_SHA"
+        echo "REMOTE_REF = $REMOTE_REF"
+        echo "REMOTE_SHA = $REMOTE_SHA"
+        echo "REST = $REST"
+    fi
+
     if [ "$LOCAL_SHA" = "$NULL_REF" ]
     then
         # Handle delete
@@ -45,6 +54,12 @@ do
     export REMOTE URL
     export LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA
     export ACTION RANGE
+
+    if [ "$VERBOSITY" -ge 8 ]
+    then
+        echo "ACTION = $ACTION"
+        echo "RANGE = $RANGE"
+    fi
 
     run_hooks
 done

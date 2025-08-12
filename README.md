@@ -97,6 +97,7 @@ git config --type=int hooks.verbosity 2
 - 1: Also print hook names as they run
 - 2: Also print hook execution time after they finish.
 - 7: Also print main commands for some hooks
+- 8: Also print some debug information
 - 9: Also run everything with `set -x`
 
 <!--
