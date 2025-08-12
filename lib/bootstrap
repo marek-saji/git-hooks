@@ -158,6 +158,8 @@ then
     fi
 fi
 export FORCE_COLOR
+unset NO_COLOR
+export NO_COLOR
 
 TMPDIR="${TMPDIR:-/tmp}"
 export TMPDIR
