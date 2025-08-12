@@ -15,15 +15,6 @@ URL="$2"
 
 while read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA REST
 do
-    if [ "$REMOTE_SHA" != "$NULL_REF" ]
-    then
-        if [ "$( git cat-file -t "$REMOTE_SHA" 2>/dev/null )" != "commit" ]
-        then
-            error "Remote commit %s is not available locally. Try fetching first." "$REMOTE_SHA" 1>&2
-            exit 65
-        fi
-    fi
-
     if [ "$LOCAL_SHA" = "$NULL_REF" ]
     then
         # Handle delete
@@ -31,6 +22,16 @@ do
         RANGE=
     else
         ACTION=push
+
+        if [ "$REMOTE_SHA" != "$NULL_REF" ]
+        then
+            if [ "$( git cat-file -t "$REMOTE_SHA" 2>/dev/null )" != "commit" ]
+            then
+                error "Remote commit %s is not available locally. Try fetching first." "$REMOTE_SHA" 1>&2
+                exit 65
+            fi
+        fi
+
         if [ "$REMOTE_SHA" = "$NULL_REF" ]
         then
             # New branch, examine everything from base branch
