@@ -61,8 +61,17 @@ then
                     if [ -z "$postcss_plugin" ]
                     then
                         warning 2>&1 'Install postcss-scss npm package to lint SCSS files.'
+                    else
+                        post_css_plugin_resolved="$(
+                            node -p 'require.resolve("postcss-scss")' || :
+                        )"
+                        if [ -z "$post_css_plugin_resolved" ]
+                        then
+                            warning 2>&1 'Failed to determine postcss-scss entry point.'
+                        else
+                            scss_arg="--custom-syntax='$post_css_plugin_resolved'"
+                        fi
                     fi
-                    scss_arg="--custom-syntax='$postcss_plugin'"
                 fi
 
                 git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" ':(icase)*.scss' |
