@@ -16,6 +16,17 @@ if [ -n "$AGAINST" ]
 then
     if command -v prettier >/dev/null && prettier --find-config-path dummy.js >/dev/null 2>&1
     then
+        filter_symlinks ()
+        {
+            while read -r filepath
+            do
+                if ! [ -L "$filepath" ]
+                then
+                    echo "$filepath"
+                fi
+            done
+        }
+
         # Don’t use --cached when AGAINST is a range (i.e. we are running pre-push hook)
         # TODO Duplicated for all lint-* pre-commit hooks
         if echo "$AGAINST" | grep -q -F ".."
@@ -30,6 +41,7 @@ then
             # No unstaged modifications -- running prettier on files
 
             git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" |
+                filter_symlinks |
                 xargs sh -$-"${shopt}" -c "prettier --ignore-unknown --check \"\$@\"" _
         else
             # Some staged modifications -- running prettier on staged diffs
@@ -52,6 +64,7 @@ then
                 # TODO Maybe use concurently if available?
 
                 git diff $diff_opt --diff-filter=ACMR --name-only "$AGAINST" |
+                    filter_symlinks |
                     nl |
                     while read -r number file
                     do
