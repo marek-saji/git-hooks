@@ -55,8 +55,10 @@ package_dir="$( cd "$( dirname "$( realpath "$0" )" )" && pwd -P )"
 
 dir="${1:-${INIT_CWD:-$PWD}}"
 git_dir="$(
-    cd "$dir"
-    cd "$( git rev-parse --git-dir )"
+    {
+      cd "$dir"
+      cd "$( git rev-parse --git-dir )"
+    } >/dev/null
     pwd -P
 )"
 if [ -z "$git_dir" ]
