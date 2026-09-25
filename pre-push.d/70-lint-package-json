@@ -26,9 +26,38 @@ then
                 sh -"$shopt$-" -c "yarn check --verify-tree"
             fi
         fi
-    elif command -v npm >/dev/null
+    elif command -v npm >/dev/null && [ -r package-lock.json ]
     then
-        if sh -"$shopt$-" -c 'npm ls --depth=1 2>&1 | grep "^npm error " 1>&2'
+        # Used to use this simple command, but npm also shows errors
+        # when deps of optional packages are missing:
+        #   npm ls --depth=1 2>&1 | grep "^npm error "
+
+        # Ignore problems involving optional packages. npm installs
+        # children of optional packages skipped for other platforms,
+        # and `npm ls` reports them as extraneous.
+        filter="$(cat <<'JQ'
+            # Names of packages the lock file marks as optional
+            def optional_packages:
+              ($lock[0].packages // {})
+              | to_entries
+              | map(select(.value.optional) | .key | sub(".*node_modules/"; ""));
+
+            # Package names mentioned in a problem line
+            def mentioned_packages:
+              [scan("(?:extraneous|missing|invalid): (@?[^@ ]+)|required by (@?[^@ ]+)")[] | select(. != null)];
+
+            optional_packages as $optional
+            | [
+                .problems[]?
+                | select(mentioned_packages | any(. as $name | $optional | index($name)) | not)
+              ]
+            | if length > 0 then map(. + "\n") | add | halt_error(1) else empty end
+JQ
+        )"
+        if ! (
+            set -"$shopt$-"
+            npm ls --depth=1 --json 2>/dev/null | jq -r --slurpfile lock "package-lock.json" "$filter"
+        )
         then
             exit 1
         fi
