@@ -10,7 +10,7 @@ then
 
     # Warning: Used to call git-diff with `--pickaxe-regex -S "\<($regex)\>"`, but
     # it caused problems on macOS
-    if git diff "$RANGE" | grep -E "^\\+.*\<($regex)\>"
+    if git diff "$RANGE" ':(exclude)**/dist/*' ':(exclude)**/*.min.js' | grep -E "^\\+.*\<($regex)\>"
     then
         error 'Found changes introducing WIP|TODO. Resolve before pushing.'
         false
