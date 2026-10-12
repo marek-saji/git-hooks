@@ -54,13 +54,7 @@ fi
 package_dir="$( cd "$( dirname "$( realpath "$0" )" )" && pwd -P )"
 
 dir="${1:-${INIT_CWD:-$PWD}}"
-git_dir="$(
-    {
-      cd "$dir"
-      cd "$( git rev-parse --git-dir )"
-    } >/dev/null
-    pwd -P
-)"
+git_dir="$( git -C "$dir" rev-parse --absolute-git-dir 2>/dev/null || : )"
 if [ -z "$git_dir" ]
 then
     printf "ERROR: No git repository found in: %s\n" "$dir"
