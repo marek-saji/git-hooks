@@ -23,6 +23,17 @@ then
 
     if [ -n "$actionlint_bin" ]
     then
+        # actionlint does not look for its config when reading from stdin
+        config_opt=
+        for config_file in .github/actionlint.yaml .github/actionlint.yml
+        do
+            if [ -f "$config_file" ]
+            then
+                config_opt="-config-file $config_file"
+                break
+            fi
+        done
+
         set -- '.github/workflows/*.yml' '.github/workflows/*.yaml'
 
         # Don’t use --cached when AGAINST is a range (i.e. we are running pre-push hook)
@@ -50,7 +61,7 @@ then
                     fi
                     git show ":$file" | {
                         set -"$shopt"
-                        $actionlint_bin -
+                        $actionlint_bin $config_opt -
                     }
                 done
         fi
